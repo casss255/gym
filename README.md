@@ -8,7 +8,7 @@ A gym app for iPhone: animated exercise demos, weight and rep logging, rest time
 - **Workout logger**: weight and reps per set, rest timer, personal bests, history.
 - **Languages**: switch between English (EN) and Bahasa Indonesia (ID) with the toggle at the top of the main screens. The app picks your phone's language the first time.
 - **Meals tab**: a daily menu where every meal shows calories and protein, with portions sized to your bodyweight and height.
-  - **Set it up for me**: answer a few questions (body, goal, activity, diet, vegetables, allergies, food style, meals per day) and get a 7-day menu.
+  - **Set it up for me**: answer a few questions (body, goal, activity, diet, vegetables, allergies, food style, meals per day) and get a 7-day menu. Choose 1 to 5 meals a day: 1 meal is served as three plates in one sitting, 2 meals are two big meals, and 4 or 5 add snacks.
   - **I will build it myself**: pick your own meal for every slot. Portions are still sized for you.
 
 ### How the meal portions are worked out

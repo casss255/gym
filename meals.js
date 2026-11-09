@@ -19,24 +19,35 @@ const BOOST_SLACK = 0.05;
 const DIET_GAP_PENALTY = 0.12; // per step a meal is more restrictive than the user's diet, so an omnivore mostly gets omnivore meals
 const CUISINE_PENALTY = 0.4; // a bit more than one repeat of a meal, so the preferred style dominates but still rotates
 
+/* Each slot lists the recipe types it accepts (b breakfast, m main, s snack) and its share of the day.
+   One meal a day is served as three plates in one sitting, so no single plate becomes unrealistically big. */
 const MEAL_PLANS = {
+  1: [
+    { key: 'plateMain', types: ['m'], share: 0.50 },
+    { key: 'plateSecond', types: ['m'], share: 0.30 },
+    { key: 'plateFinish', types: ['s'], share: 0.20 },
+  ],
+  2: [
+    { key: 'meal1', types: ['m', 'b'], share: 0.45 },
+    { key: 'meal2', types: ['m'], share: 0.55 },
+  ],
   3: [
-    { key: 'breakfast', type: 'b', share: 0.28 },
-    { key: 'lunch', type: 'm', share: 0.38 },
-    { key: 'dinner', type: 'm', share: 0.34 },
+    { key: 'breakfast', types: ['b'], share: 0.28 },
+    { key: 'lunch', types: ['m'], share: 0.38 },
+    { key: 'dinner', types: ['m'], share: 0.34 },
   ],
   4: [
-    { key: 'breakfast', type: 'b', share: 0.25 },
-    { key: 'lunch', type: 'm', share: 0.33 },
-    { key: 'snackPm', type: 's', share: 0.12 },
-    { key: 'dinner', type: 'm', share: 0.30 },
+    { key: 'breakfast', types: ['b'], share: 0.25 },
+    { key: 'lunch', types: ['m'], share: 0.33 },
+    { key: 'snackPm', types: ['s'], share: 0.12 },
+    { key: 'dinner', types: ['m'], share: 0.30 },
   ],
   5: [
-    { key: 'breakfast', type: 'b', share: 0.22 },
-    { key: 'snackAm', type: 's', share: 0.10 },
-    { key: 'lunch', type: 'm', share: 0.30 },
-    { key: 'snackPm', type: 's', share: 0.10 },
-    { key: 'dinner', type: 'm', share: 0.28 },
+    { key: 'breakfast', types: ['b'], share: 0.22 },
+    { key: 'snackAm', types: ['s'], share: 0.10 },
+    { key: 'lunch', types: ['m'], share: 0.30 },
+    { key: 'snackPm', types: ['s'], share: 0.10 },
+    { key: 'dinner', types: ['m'], share: 0.28 },
   ],
 };
 
@@ -74,7 +85,7 @@ function calcTargets(p) {
 
 function slotTargets(targets, count) {
   return (MEAL_PLANS[count] || MEAL_PLANS[3]).map(s => ({
-    key: s.key, type: s.type,
+    key: s.key, types: s.types,
     kcal: Math.round(targets.kcal * s.share), protein: Math.round(targets.protein * s.share),
   }));
 }
@@ -145,7 +156,7 @@ function recipeFits(recipe, prefs) {
   if (recipe.al.some(a => (prefs.allergies || []).includes(a))) return false;
   return !(prefs.veg === 'no' && recipe.vegCore);
 }
-const eligibleRecipes = (prefs, type) => RECIPES.filter(r => r.slot === type && recipeFits(r, prefs));
+const eligibleRecipes = (prefs, types) => RECIPES.filter(r => types.includes(r.slot) && recipeFits(r, prefs));
 
 function mulberry32(seed) {
   let a = seed >>> 0;
@@ -165,6 +176,13 @@ function fitError(sized, slot) {
   return kcalErr + short + over * 0.3;
 }
 
+const SHORTFALL_NOTICE = 0.1;
+/* How far a day falls under the calorie target (0 when within 10%), so the app can say so instead of hiding it. */
+const calorieShortfall = (total, targets) => {
+  const gap = (targets.kcal - total.kcal) / targets.kcal;
+  return gap > SHORTFALL_NOTICE ? gap : 0;
+};
+
 const emptyPlan = count => Array.from({ length: WEEK_DAYS }, () => MEAL_PLANS[count].map(() => null));
 
 /* A 7-day plan of recipe ids (null where nothing fits). Rotates recipes so the week is not repetitive. */
@@ -177,7 +195,7 @@ function generatePlan(profile, prefs, seed) {
   return Array.from({ length: WEEK_DAYS }, () => {
     const today = new Set();
     return slots.map(slot => {
-      const pool = eligibleRecipes(prefs, slot.type);
+      const pool = eligibleRecipes(prefs, slot.types);
       if (!pool.length) return null;
       const ranked = pool
         .map(r => {

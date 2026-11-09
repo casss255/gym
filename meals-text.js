@@ -32,6 +32,11 @@ Object.assign(STR.en, {
   m_edit: 'Edit my details', m_regen: 'Make a new menu', m_reset: 'Start over', m_mode_auto: 'Menu made for you', m_mode_manual: 'Your own menu',
   c_regen: 'Make a new 7-day menu? Meals you changed will be replaced.', c_reset: 'Start over? Your current menu will be removed.',
   m_day_aria: 'Day', m_cooked: 'Day {n}',
+  count_1: '1 meal', count_1_sub: 'One sitting, served in 3 parts: main plate, second plate, finishing snack',
+  count_2: '2 meals', count_2_sub: 'Two big meals, for example brunch and dinner',
+  slot_plateMain: 'Main plate', slot_plateSecond: 'Second plate', slot_plateFinish: 'Finishing snack', slot_meal1: 'First meal', slot_meal2: 'Second meal',
+  m_few_note: 'Eating once or twice a day suits some people, but it is not better for fat loss than 3 meals. With one meal, eat all three plates in one sitting. If you have diabetes, take medication, are under 18, are pregnant, or have ever had disordered eating, check with a doctor first.',
+  m_short: 'This day is about {pct}% under your calorie target, because each plate is kept to a realistic size. Choose more meals a day to fit it in comfortably.',
 });
 
 Object.assign(STR.id, {
@@ -67,6 +72,11 @@ Object.assign(STR.id, {
   m_edit: 'Ubah data saya', m_regen: 'Buat menu baru', m_reset: 'Mulai dari awal', m_mode_auto: 'Menu disusun untukmu', m_mode_manual: 'Menu buatanmu sendiri',
   c_regen: 'Buat menu 7 hari yang baru? Menu yang kamu ganti akan tergantikan.', c_reset: 'Mulai dari awal? Menumu saat ini akan dihapus.',
   m_day_aria: 'Hari', m_cooked: 'Hari {n}',
+  count_1: '1 kali makan', count_1_sub: 'Satu kali duduk, disajikan dalam 3 bagian: piring utama, piring kedua, camilan penutup',
+  count_2: '2 kali makan', count_2_sub: 'Dua kali makan besar, misalnya brunch dan makan malam',
+  slot_plateMain: 'Piring utama', slot_plateSecond: 'Piring kedua', slot_plateFinish: 'Camilan penutup', slot_meal1: 'Makan pertama', slot_meal2: 'Makan kedua',
+  m_few_note: 'Makan sekali atau dua kali sehari cocok untuk sebagian orang, tetapi tidak lebih baik untuk menurunkan lemak dibanding 3 kali makan. Kalau makan sekali, habiskan ketiga piring dalam satu kali duduk. Kalau kamu punya diabetes, minum obat rutin, berusia di bawah 18, sedang hamil, atau pernah mengalami gangguan makan, tanyakan dulu ke dokter.',
+  m_short: 'Hari ini sekitar {pct}% di bawah target kalorimu, karena tiap piring dijaga tetap berukuran wajar. Pilih lebih banyak kali makan per hari agar pas dengan nyaman.',
 });
 
 const ALLERGY_KEYS = ['egg', 'dairy', 'fish', 'shellfish', 'nuts', 'soy', 'gluten'];

@@ -10,7 +10,7 @@ const OPTION_VALUES = {
   diet: ['omni', 'pesc', 'veg', 'vegan'],
   veg: ['yes', 'no'],
   cuisine: ['id', 'intl', 'both'],
-  count: [3, 4, 5],
+  count: [1, 2, 3, 4, 5],
 };
 const OPTION_OWNER = { goal: 'profile', act: 'profile', diet: 'prefs', veg: 'prefs', cuisine: 'prefs', count: 'prefs' };
 
@@ -129,7 +129,8 @@ function viewPlan() {
   const M = S.meals, tg = calcTargets(M.profile);
   const d = nav.mday == null ? todayIdx() : nav.mday;
   const day = sizeDay(M.plan[d] || [], M.profile, M.prefs);
-  const notes = [tg.floorApplied && t('m_floor'), tg.minorAdjusted && t('m_minor'), tg.basisAdjusted && t('m_basis_cap')].filter(Boolean);
+  const gap = day.meals.every(Boolean) ? calorieShortfall(day.total, tg) : 0;
+  const notes = [tg.floorApplied && t('m_floor'), tg.minorAdjusted && t('m_minor'), tg.basisAdjusted && t('m_basis_cap'), M.prefs.count <= 2 && t('m_few_note')].filter(Boolean);
   const goalLabel = t('goal_' + tg.goal);
   return `<h1 class="screen-title">${t('m_your_menu')}</h1>
     <p class="sub plan-basis">${t('m_basis', { w: M.profile.w, h: M.profile.h, goal: goalLabel })} ${t(M.mode === 'auto' ? 'm_mode_auto' : 'm_mode_manual')}.</p>
@@ -146,6 +147,7 @@ function viewPlan() {
       ${totalBar(t('protein'), day.total.p, tg.protein, t('grams'), 'var(--green)')}
       <p class="sub">${t('carbs')} ${fmtInt(day.total.c)} ${t('grams')} · ${t('fat')} ${fmtInt(day.total.f)} ${t('grams')}</p>
     </section>
+    ${gap ? `<p class="fine warn">${t('m_short', { pct: Math.round(gap * 100) })}</p>` : ''}
     <p class="fine">${t('m_weights')}</p>
     <div class="plan-actions">
       <button class="link" data-act="m-edit">${t('m_edit')}</button>
@@ -160,7 +162,7 @@ function openMealPicker(slotIdx) {
   const M = S.meals, d = nav.mday == null ? todayIdx() : nav.mday;
   const s = slotTargets(calcTargets(M.profile), M.prefs.count)[slotIdx];
   const current = (M.plan[d] || [])[slotIdx];
-  const pool = M.mode === 'auto' ? eligibleRecipes(M.prefs, s.type) : RECIPES.filter(r => r.slot === s.type);
+  const pool = M.mode === 'auto' ? eligibleRecipes(M.prefs, s.types) : RECIPES.filter(r => s.types.includes(r.slot));
   const rows = pool
     .map(r => ({ r, sz: scaleRecipe(r, s.kcal, s.protein, M.prefs.veg === 'no') }))
     .sort((a, b) => fitError(a.sz, s) - fitError(b.sz, s));

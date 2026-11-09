@@ -44,6 +44,7 @@
 .ings b { font-weight: 700; margin-right: 4px; }
 .meal-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
 .meal-foot .sub { font-size: 13px; }
+.fine.warn { color: var(--ink); background: var(--surface); border-left: 5px solid var(--yellow); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
 .tags { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
 .meal.empty .sub { margin: 6px 0 12px; }
 

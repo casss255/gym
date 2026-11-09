@@ -9,8 +9,8 @@ const vm = require('node:vm');
 const root = path.join(__dirname, '..');
 const code = ['meals-data.js', 'meals.js'].map(f => fs.readFileSync(path.join(root, f), 'utf8')).join('\n');
 const api = new Function(`${code}
-return { ING, RECIPES, RECIPE_BY_ID, DIET_RANK, MEAL_PLANS, validateProfile, calcTargets, slotTargets, scaleRecipe, generatePlan, sizeDay, eligibleRecipes, emptyPlan };`)();
-const { ING, RECIPES, RECIPE_BY_ID, DIET_RANK, MEAL_PLANS, validateProfile, calcTargets, scaleRecipe, generatePlan, sizeDay, eligibleRecipes, emptyPlan } = api;
+return { ING, RECIPES, RECIPE_BY_ID, DIET_RANK, MEAL_PLANS, validateProfile, calcTargets, slotTargets, scaleRecipe, generatePlan, sizeDay, eligibleRecipes, emptyPlan, calorieShortfall };`)();
+const { ING, RECIPES, RECIPE_BY_ID, DIET_RANK, MEAL_PLANS, validateProfile, calcTargets, scaleRecipe, generatePlan, sizeDay, eligibleRecipes, emptyPlan, calorieShortfall } = api;
 
 const MALE = { sex: 'm', age: 25, h: 175, w: 70, act: 'mod', goal: 'maintain' };
 const FEMALE = { sex: 'f', age: 25, h: 160, w: 55, act: 'light', goal: 'lose' };
@@ -103,7 +103,7 @@ test('scaleRecipe: hits the calorie target within 12% for typical meals', () => 
   PROFILES.forEach(p => {
     const slots = api.slotTargets(calcTargets(p), 4);
     slots.forEach(slot => {
-      eligibleRecipes(BASE_PREFS, slot.type).forEach(r => {
+      eligibleRecipes(BASE_PREFS, slot.types).forEach(r => {
         const s = scaleRecipe(r, slot.kcal, slot.protein, false);
         const off = Math.abs(s.kcal - slot.kcal) / slot.kcal;
         // meals outside the scaling range are allowed to miss; they are ranked down by the planner
@@ -135,7 +135,7 @@ test('scaleRecipe: no portion is unrealistic, even for the largest targets', () 
   const big = { sex: 'm', age: 30, h: 195, w: 120, act: 'high', goal: 'gain' };
   [big, ...PROFILES].forEach(p => {
     api.slotTargets(calcTargets(p), 5).forEach(slot => {
-      RECIPES.filter(r => r.slot === slot.type).forEach(r => {
+      RECIPES.filter(r => slot.types.includes(r.slot)).forEach(r => {
         const s = scaleRecipe(r, slot.kcal, slot.protein, false);
         s.items.forEach(i => {
           const cap = ING[i.ing].m;
@@ -260,4 +260,69 @@ test('emptyPlan: 7 days with one null per slot', () => {
   const plan = emptyPlan(5);
   assert.strictEqual(plan.length, 7);
   assert.ok(plan.every(d => d.length === 5 && d.every(x => x === null)));
+});
+
+test('meal plans: every option (1 to 5 meals) shares the whole day between its slots', () => {
+  [1, 2, 3, 4, 5].forEach(count => {
+    assert.ok(MEAL_PLANS[count], `no plan for ${count} meals`);
+    const total = MEAL_PLANS[count].reduce((a, s) => a + s.share, 0);
+    assert.ok(Math.abs(total - 1) < 1e-9, `${count} meals: shares add up to ${total}`);
+    MEAL_PLANS[count].forEach(s => assert.ok(Array.isArray(s.types) && s.types.length, `${count} meals: ${s.key} has no recipe types`));
+  });
+});
+
+const FITS_IN_PLATES_KCAL = 3200; // above this, one or two sittings cannot hold the day at realistic plate sizes
+
+test('generatePlan: 1 and 2 meals a day fill every slot and stay close to the targets', () => {
+  const typical = PROFILES.filter(p => calcTargets(p).kcal <= FITS_IN_PLATES_KCAL);
+  assert.ok(typical.length >= 3);
+  [1, 2].forEach(count => {
+    ['omni', 'vegan'].forEach(diet => {
+      typical.forEach(p => {
+        const prefs = { ...BASE_PREFS, diet, count };
+        const t = calcTargets(p);
+        const plan = generatePlan(p, prefs, 0);
+        assert.strictEqual(plan.length, 7);
+        plan.forEach((ids, d) => {
+          assert.strictEqual(ids.length, MEAL_PLANS[count].length);
+          ids.forEach(id => assert.ok(RECIPE_BY_ID[id], `${count} meals/${diet}: empty slot on day ${d}`));
+          const day = sizeDay(ids, p, prefs);
+          const off = Math.abs(day.total.kcal - t.kcal) / t.kcal;
+          assert.ok(off < 0.12, `${count} meals/${diet} ${JSON.stringify(p)} day ${d}: ${Math.round(day.total.kcal)} vs ${t.kcal}`);
+        });
+      });
+    });
+  });
+});
+
+test('calorieShortfall: very large targets in one sitting are flagged instead of hidden', () => {
+  const big = PROFILES.find(p => calcTargets(p).kcal > FITS_IN_PLATES_KCAL);
+  assert.ok(big, 'need a profile with a very large target');
+  const prefs = { ...BASE_PREFS, count: 1 };
+  const day = sizeDay(generatePlan(big, prefs, 0)[0], big, prefs);
+  const gap = calorieShortfall(day.total, calcTargets(big));
+  assert.ok(gap > 0.1 && gap < 0.4, `expected a flagged shortfall, got ${gap}`);
+  // a normal day is not flagged
+  const normalPrefs = { ...BASE_PREFS, count: 3 };
+  assert.strictEqual(calorieShortfall(sizeDay(generatePlan(MALE, normalPrefs, 0)[0], MALE, normalPrefs).total, calcTargets(MALE)), 0);
+  assert.strictEqual(calorieShortfall({ kcal: 1900 }, { kcal: 2000 }), 0);
+  assert.ok(Math.abs(calorieShortfall({ kcal: 1500 }, { kcal: 2000 }) - 0.25) < 1e-9);
+});
+
+test('generatePlan: 1 and 2 meal days respect diet and allergies and never repeat a recipe within a day', () => {
+  [1, 2].forEach(count => {
+    const prefs = { ...BASE_PREFS, diet: 'veg', allergies: ['nuts', 'soy'], count };
+    generatePlan(MALE, prefs, 2).forEach(ids => {
+      assert.strictEqual(new Set(ids).size, ids.length, `${count} meals: a recipe repeats in one day`);
+      ids.forEach(id => {
+        const r = RECIPE_BY_ID[id];
+        assert.ok(DIET_RANK[r.diet] <= DIET_RANK.veg && !r.al.includes('nuts') && !r.al.includes('soy'), `${count} meals: ${id}`);
+      });
+    });
+  });
+});
+
+test('generatePlan: the one-meal day is three plates (two mains and a snack-type finish)', () => {
+  const ids = generatePlan(MALE, { ...BASE_PREFS, count: 1 }, 0)[0];
+  assert.deepStrictEqual(ids.map(id => RECIPE_BY_ID[id].slot), ['m', 'm', 's']);
 });
