@@ -1,12 +1,13 @@
 // Bump this version every time index.html (or any app file) changes so phones fetch the new version.
-const VERSION = 'gym-v3';
+const VERSION = 'gym-v4';
 const SHELL = [
   './', './index.html', './features.css', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
   './i18n.js', './i18n-ex.js', './meals-text.js', './meals-data.js', './meals.js', './meals-view.js',
 ];
 
 self.addEventListener('install', e => {
-  e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips the browser's HTTP cache, so a new version never stores stale copies of the files
+  e.waitUntil(caches.open(VERSION).then(c => Promise.all(SHELL.map(u => c.add(new Request(u, { cache: 'reload' }))))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim()));
