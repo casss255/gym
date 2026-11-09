@@ -57,10 +57,10 @@ function optionList(key, current) {
 
 function stepBody(id, d) {
   if (id === 'body') {
-    const field = (k, label, ph) => `<label class="field"><span>${t(label)}</span><input inputmode="decimal" data-mf="${k}" value="${esc(d.profile[k])}" placeholder="${ph}" autocomplete="off"></label>`;
+    const field = (k, label) => `<label class="field"><span>${t(label)}</span><input inputmode="decimal" data-mf="${k}" value="${esc(d.profile[k])}" autocomplete="off"></label>`;
     return `<div class="field"><span>${t('f_sex')}</span>
         <div class="pair">${['m', 'f'].map(v => `<button class="opt" aria-pressed="${d.profile.sex === v}" data-act="m-opt" data-k="sex" data-v="${v}"><b>${t('sex_' + v)}</b></button>`).join('')}</div></div>
-      ${field('age', 'f_age', '25')}${field('h', 'f_h', '170')}${field('w', 'f_w', '65')}`;
+      ${field('age', 'f_age')}${field('h', 'f_h')}${field('w', 'f_w')}`;
   }
   if (id === 'allergy') {
     const none = !d.prefs.allergies.length;

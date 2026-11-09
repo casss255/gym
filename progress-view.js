@@ -2,8 +2,8 @@
    Uses globals from index.html (S, nav, render, save, toast, esc, num, I) and progress.js. */
 const CHART_BOX = { w: 340, h: 190, left: 42, right: 16, top: 18, bottom: 30 };
 const MEASURES = [
-  { key: 'w', title: 'p_chart_weight', unit: 'kg', color: 'var(--blue)', input: 'p_weight', hint: 70 },
-  { key: 'waist', title: 'p_chart_waist', unit: 'cm', color: 'var(--orange)', input: 'p_waist', hint: 80 },
+  { key: 'w', title: 'p_chart_weight', unit: 'kg', color: 'var(--blue)', input: 'p_weight' },
+  { key: 'waist', title: 'p_chart_waist', unit: 'cm', color: 'var(--orange)', input: 'p_waist' },
 ];
 
 const fmt1 = n => n.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
@@ -37,12 +37,6 @@ function previousBox(prev) {
     <div class="prev-vals">${item('p_chart_weight', prev.w, 'kg')}${item('p_chart_waist', prev.waist, 'cm')}</div></div>`;
 }
 
-/* What to type next: last time's value, or the Meals plan weight, or a typical number. */
-function measureHint(m, prev) {
-  const meals = S.meals && S.meals.profile;
-  return prev ? prev[m.key] : m.key === 'w' && meals ? meals.w : m.hint;
-}
-
 /* Live change against the previous check-in while typing, only once the number is plausible. */
 function deltaText(prev, d, m) {
   const v = num(d[m.key]);
@@ -55,7 +49,7 @@ function checkinForm(entries) {
   const d = progressDraft(), prev = previousCheckin(entries, d.date);
   const meals = S.meals && S.meals.profile;
   const field = m => `<label class="field"><span>${t(m.input)}</span>
-    <input inputmode="decimal" data-pf="${m.key}" value="${esc(d[m.key])}" placeholder="${esc(measureHint(m, prev))}" autocomplete="off">
+    <input inputmode="decimal" data-pf="${m.key}" value="${esc(d[m.key])}" autocomplete="off">
     <em class="delta" data-delta="${m.key}" aria-live="polite">${esc(deltaText(prev, d, m))}</em></label>`;
   return `<section class="checkin"><h2 class="section-title">${t('p_form')}</h2>
     <div id="prev-slot">${previousBox(prev)}</div>
@@ -135,14 +129,13 @@ function saveCheckin() {
   toast(t(replaced ? 'p_updated' : 'p_saved'));
 }
 
-/* Update the Previous box, hints and live changes in place. A full re-render would close the date picker mid-wheel. */
+/* Update the Previous box and live changes in place. A full re-render would close the date picker mid-wheel. */
 function refreshPreview() {
   const d = progressDraft(), prev = previousCheckin(checkins(), d.date);
   const slot = document.querySelector('#prev-slot');
   if (slot) slot.innerHTML = previousBox(prev);
   MEASURES.forEach(m => {
-    const inp = document.querySelector(`[data-pf="${m.key}"]`), delta = document.querySelector(`[data-delta="${m.key}"]`);
-    if (inp) inp.placeholder = measureHint(m, prev);
+    const delta = document.querySelector(`[data-delta="${m.key}"]`);
     if (delta) delta.textContent = deltaText(prev, d, m);
   });
 }
