@@ -1,7 +1,7 @@
 /* ---------- English text for exercises and programs ----------
    index.html keeps the original Indonesian text and stable keys (saved history uses the Indonesian day names).
    Needs EX, CATS and PROGRAMS from index.html, but only reads them when called. */
-const CAT_EN = { kaki: 'Legs', dorong: 'Push', tarik: 'Pull', perut: 'Core' };
+const CAT_EN = { kaki: 'Legs', dorong: 'Push', tarik: 'Pull', perut: 'Core', kardio: 'Cardio' };
 const DAY_EN = { 'Hari A': 'Day A', 'Hari B': 'Day B', 'Sirkuit': 'Circuit' };
 
 const PROG_EN = {
@@ -9,6 +9,10 @@ const PROG_EN = {
   upperlower: { name: 'Upper / Lower', level: 'Intermediate', desc: 'Four times a week: upper body, lower body, rest, repeat.' },
   ppl: { name: 'Push Pull Legs', level: 'Intermediate', desc: 'Push, pull, legs. Run it 3 days a week, or 6 days once you are used to it.' },
   homeworkout: { name: 'No Equipment', level: 'All levels', desc: 'For home or travel. No equipment needed.' },
+  fatloss: {
+    name: 'Fat Loss Circuit', level: 'All levels',
+    desc: 'Three days a week: a full-body circuit, a cardio and core day, then a legs circuit. Keep rests short (30–45 seconds) to keep your heart rate up. Pair it with the Meals tab and daily walks.',
+  },
 };
 
 const EX_EN = {
@@ -178,6 +182,79 @@ const EX_EN = {
       'Lower slowly.',
     ],
     avoid: ['Pulling on your neck with your hands.', 'Moving too fast.'],
+  },
+  jumpingjack: {
+    equip: 'No equipment', muscles: ['Full body', 'Calves', 'Shoulders'],
+    steps: [
+      'Stand tall with your feet together and your arms at your sides.',
+      'Jump lightly, spreading your feet wider than your shoulders and raising both arms overhead.',
+      'Jump again to return to the start.',
+      'Land softly on the balls of your feet and keep your breathing steady.',
+    ],
+    avoid: ['Landing with locked, straight knees.', 'Not raising your arms all the way overhead.'],
+    note: 'Sore knees or ankles? Step one foot out to the side at a time instead of jumping.',
+  },
+  highknees: {
+    equip: 'No equipment', muscles: ['Quads', 'Hips', 'Core', 'Calves'],
+    steps: [
+      'Stand tall with your feet hip-width apart.',
+      'Drive one knee up to hip height, then lower it.',
+      'Switch legs quickly, swinging your opposite arm as if running.',
+      'Stay on the balls of your feet and keep your torso upright.',
+    ],
+    avoid: ['Leaning back.', 'Only lifting your knees halfway.'],
+    note: 'Start by marching in place with high knees, then build up speed gradually.',
+  },
+  buttkick: {
+    equip: 'No equipment', muscles: ['Hamstrings', 'Calves', 'Hips'],
+    steps: [
+      'Stand tall with your feet hip-width apart.',
+      'Kick one heel up toward your glutes, then lower it.',
+      'Alternate legs, swinging your arms as if jogging in place.',
+    ],
+    avoid: ['Leaning forward.', 'Letting your knees drift too far forward.'],
+  },
+  mountainclimber: {
+    equip: 'No equipment', muscles: ['Core', 'Shoulders', 'Quads', 'Hips'],
+    steps: [
+      'Start in a high plank: hands under your shoulders, body in a straight line from head to heels.',
+      'Pull one knee toward your chest.',
+      'Return that leg back as you pull the other knee in, alternating like running.',
+      'Keep your hips low and your abs tight.',
+    ],
+    avoid: ['Hips piking up high.', 'Hips bouncing up and down.'],
+    note: 'Not strong enough yet? Go slowly, one leg at a time, or put your hands on a bench.',
+  },
+  squatjump: {
+    equip: 'No equipment', muscles: ['Quads', 'Glutes', 'Calves', 'Core'],
+    steps: [
+      'Stand with your feet shoulder-width apart.',
+      'Lower into a squat until your thighs are almost parallel to the floor, swinging your arms back.',
+      'Drive through the floor and jump as high as you can, swinging your arms up.',
+      'Land softly with your knees bent, then go straight into the next squat.',
+    ],
+    avoid: ['Knees caving in as you land.', 'Landing stiff-legged and hard.'],
+    note: 'This is a high-impact move. If you have knee or back problems, swap it for the Bodyweight Squat.',
+  },
+  stepup: {
+    equip: 'Bench or stairs', muscles: ['Quads', 'Glutes'],
+    steps: [
+      'Face a sturdy bench. Place one whole foot on top of it.',
+      'Press through the foot on the bench until you stand tall on top, driving your other knee up.',
+      'Lower back down with control. Finish all reps, then switch legs.',
+    ],
+    avoid: ['Pushing off the foot that is still on the floor.', 'Leaning far forward.'],
+  },
+  legraise: {
+    equip: 'No equipment', muscles: ['Lower abs', 'Hips'],
+    steps: [
+      'Lie on your back with your legs straight and your arms at your sides.',
+      'Brace your abs and press your lower back into the floor.',
+      'Raise both straight legs until they point at the ceiling.',
+      'Lower them slowly until they almost touch the floor.',
+    ],
+    avoid: ['Lower back arching off the floor.', 'Dropping your legs too fast.'],
+    note: 'Too hard? Bend your knees slightly.',
   },
 };
 

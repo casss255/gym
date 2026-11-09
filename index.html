@@ -30,6 +30,7 @@
   --red: #D62839;
   --green: #1E9A57;
   --yellow: #E8A800;
+  --orange: #E8590C;
   --accent: var(--ink);
   --on-accent: #FFFFFF;
   --done: #1E9A57;
@@ -50,6 +51,7 @@
     --red: #F04A5A;
     --green: #34B873;
     --yellow: #FFC433;
+    --orange: #FF8A3D;
     --on-accent: #101418;
     --done: #34B873;
     color-scheme: dark;
@@ -334,6 +336,7 @@ body.in-workout .tabs { display: none; }
 <script src="./meals-data.js"></script>
 <script src="./meals.js"></script>
 <script src="./meals-view.js"></script>
+<script src="./cardio.js"></script>
 <script>
 /* ---------- Pictogram engine: animated stick-figure exercises drawn in SVG ---------- */
 const GROUND = 186;
@@ -345,6 +348,7 @@ function resolvePose(p) {
   const r = Object.assign({}, p);
   if (r.h === undefined) r.h = r.t;
   if (r.ft === undefined) r.ft = 90;
+  if (r.y === undefined) r.y = 0; // optional vertical offset of the whole body (jumps, hops)
   ['ua', 'fa', 'th', 'sh', 'ft'].forEach(k => { if (r[k + '2'] === undefined) r[k + '2'] = r[k]; });
   return r;
 }
@@ -388,11 +392,13 @@ function cycleU(phase) {
 }
 
 function solveAt(anim, u) {
-  const A = anim._A || (anim._A = resolvePose(anim.poses[0]));
-  const B = anim._B || (anim._B = resolvePose(anim.poses[1]));
-  const J = forward(mixPose(A, B, u), anim.view === 'front');
+  const R = anim._R || (anim._R = anim.poses.map(resolvePose));
+  // two poses: A to B. With more, the figure passes through them in order as u runs from 0 to 1.
+  const s = Math.min(1, Math.max(0, u)) * (R.length - 1), i = Math.min(R.length - 2, Math.floor(s));
+  const M = mixPose(R[i], R[i + 1], s - i);
+  const J = forward(M, anim.view === 'front');
   const a = anim.anchor;
-  const off = [a.x - J[a.joint][0], a.y - J[a.joint][1]];
+  const off = [a.x - J[a.joint][0], a.y + M.y - J[a.joint][1]];
   for (const k in J) J[k] = add(J[k], off);
   return J;
 }
@@ -859,6 +865,9 @@ const EX = {
   },
 };
 
+Object.assign(EX, cardioExercises(GROUND, A));
+CATS.kardio = CARDIO_CAT;
+
 /* ---------- Program ---------- */
 const PROGRAMS = [
   {
@@ -894,6 +903,8 @@ const PROGRAMS = [
     ],
   },
 ];
+
+PROGRAMS.splice(1, 0, FATLOSS_PROGRAM); // right after the beginner program
 
 /* ---------- Penyimpanan ---------- */
 const KEY = 'gymapp.v1';
@@ -1080,7 +1091,7 @@ function viewHistory() {
       return `<article class="log">
         <button data-act="toggle-log" data-id="${h.id}" aria-expanded="${open}">
           <span class="date"><small>${dayShort(d.getDay())}</small><strong>${d.getDate()}</strong><small>${monthShort(d.getMonth())}</small></span>
-          <span><h3>${esc(dayLabel(h.day))}</h3><span class="sub">${esc(p ? progName(p) : '')}<br>${t('minSets', { min: mins, sets })}</span></span>
+          <span><h3>${esc(dayLabel(h.day))}</h3><span class="sub">${esc(p ? progName(p) : '')}<br>${t(sets === 1 ? 'minOneSet' : 'minSets', { min: mins, sets })}</span></span>
           <span class="chev">${I.chev}</span>
         </button>
         ${open ? `<div class="detail">${h.ex.map(e => `<p><b>${esc(EX[e.id].name)}</b><br>${setsText(e.id, e.sets)}</p>`).join('')}
@@ -1230,7 +1241,7 @@ function openSheet(id) {
     <p class="sub" style="margin:0">${esc(t('muscles', { list: ex.muscles.join(', ') }))}</p>
     ${best ? `<div class="stats">
       <div class="stat"><small>${t('best')}</small><strong>${num(best.kg) ? fmtKg(num(best.kg)) + ' kg × ' + esc(best.reps) : esc(best.reps) + ' ' + t(ex.timed ? 'secShort' : 'repShort')}</strong></div>
-      <div class="stat"><small>${t('lastStat')}</small><strong>${t('nSets', { n: prev.length })}</strong></div>
+      <div class="stat"><small>${t('lastStat')}</small><strong>${t(prev.length === 1 ? 'oneSet' : 'nSets', { n: prev.length })}</strong></div>
     </div>` : ''}
     <h2 class="section-title">${t('howTo')}</h2>
     <ol class="steps">${ex.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>

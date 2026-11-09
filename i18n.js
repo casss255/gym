@@ -30,7 +30,7 @@ const STR = {
     // history
     history: 'History', emptyHistory: 'No workouts logged yet. Finish one and it shows up here.',
     monthWorkouts: 'Workouts this month', monthVolume: 'Total weight this month',
-    minSets: '{min} min, {sets} sets', deleteLog: 'Delete this entry',
+    minSets: '{min} min, {sets} sets', minOneSet: '{min} min, 1 set', deleteLog: 'Delete this entry',
     // workout
     exOf: 'Exercise {n} of {total}', finish: 'Finish', leaveWorkout: 'Leave workout', howTo: 'How to do it',
     last: 'Last: {sets}', setCol: 'Set', weightCol: 'Weight (kg)', plusWeightCol: '+ Weight (kg)', secCol: 'Sec', repCol: 'Reps',
@@ -46,7 +46,7 @@ const STR = {
     // rest timer
     rest: 'Rest', restNow: 'Time for the next set', restDefault: 'Default {n} s', minus15: '−15 s', plus15: '+15 s', skip: 'Skip',
     // exercise sheet
-    close: 'Close', muscles: 'Muscles: {list}', best: 'Best', lastStat: 'Last', nSets: '{n} sets', avoid: 'Avoid',
+    close: 'Close', muscles: 'Muscles: {list}', best: 'Best', lastStat: 'Last', nSets: '{n} sets', oneSet: '1 set', avoid: 'Avoid',
   },
   id: {
     navMain: 'Menu utama', language: 'Bahasa',
@@ -61,7 +61,7 @@ const STR = {
     exercises: 'Gerakan', all: 'Semua',
     history: 'Riwayat', emptyHistory: 'Belum ada latihan tercatat. Selesaikan satu latihan dan hasilnya muncul di sini.',
     monthWorkouts: 'Latihan bulan ini', monthVolume: 'Total beban bulan ini',
-    minSets: '{min} menit, {sets} set', deleteLog: 'Hapus catatan ini',
+    minSets: '{min} menit, {sets} set', minOneSet: '{min} menit, 1 set', deleteLog: 'Hapus catatan ini',
     exOf: 'Gerakan {n} dari {total}', finish: 'Selesai', leaveWorkout: 'Keluar dari latihan', howTo: 'Cara melakukan',
     last: 'Terakhir: {sets}', setCol: 'Set', weightCol: 'Beban (kg)', plusWeightCol: '+ Beban (kg)', secCol: 'Detik', repCol: 'Rep',
     weightAria: 'Beban set {n}', secAria: 'Detik set {n}', repAria: 'Repetisi set {n}', tickAria: 'Tandai set {n} selesai',
@@ -73,7 +73,7 @@ const STR = {
     cReplace: 'Ada latihan yang belum selesai. Mulai baru dan buang yang lama?', cQuit: 'Keluar dan buang latihan ini? Untuk menyimpan, tekan Selesai.',
     cDelete: 'Hapus catatan latihan ini?',
     rest: 'Istirahat', restNow: 'Waktunya set berikutnya', restDefault: 'Default {n} dtk', minus15: '−15 dtk', plus15: '+15 dtk', skip: 'Lewati',
-    close: 'Tutup', muscles: 'Otot: {list}', best: 'Terbaik', lastStat: 'Terakhir', nSets: '{n} set', avoid: 'Hindari',
+    close: 'Tutup', muscles: 'Otot: {list}', best: 'Terbaik', lastStat: 'Terakhir', nSets: '{n} set', oneSet: '1 set', avoid: 'Hindari',
   },
 };
 

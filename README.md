@@ -4,7 +4,7 @@ A gym app for iPhone: animated exercise demos, weight and rep logging, rest time
 
 ## Features
 
-- **Programs and exercises**: four programs, 17 animated exercises with step-by-step instructions.
+- **Programs and exercises**: five programs and 24 animated exercises with step-by-step instructions, including a **Fat Loss Circuit** (three days a week: a full-body circuit, a cardio and core day, and a legs circuit) built from cardio moves like jumping jacks, high knees, mountain climbers and step-ups.
 - **Workout logger**: weight and reps per set, rest timer, personal bests, history.
 - **Languages**: switch between English (EN) and Bahasa Indonesia (ID) with the toggle at the top of the main screens. The app picks your phone's language the first time.
 - **Meals tab**: a daily menu where every meal shows calories and protein, with portions sized to your bodyweight and height.
@@ -39,15 +39,16 @@ Whenever you change any app file (`index.html`, `*.js`, `features.css`), bump th
 
 ## Tests
 
-The meal logic (targets, portion scaling, diet and allergy filtering, plan generation) has tests:
+The meal logic (targets, portion scaling, diet and allergy filtering, plan generation) and the exercise animations (every pose must stand on the floor or a step) have tests:
 
 ```
-node --test tests/meals.test.js
+node --test tests/*.test.js
 ```
 
 ## Notes
 
 - Workout data and your menu are stored on each iPhone. Removing the icon from the Home Screen also deletes the data.
 - The timer sound is not audible when the iPhone is in silent mode.
-- Programs and exercises can be edited in the `EX` and `PROGRAMS` sections inside `index.html`. Their English text lives in `i18n-ex.js`.
+- Programs and exercises can be edited in the `EX` and `PROGRAMS` sections inside `index.html`. The cardio exercises and the Fat Loss Circuit are in `cardio.js`. English text for all of them lives in `i18n-ex.js`.
+- An exercise is two or more keyframe poses (joint angles) that the stick figure moves between. `y` lifts the whole body for jumps.
 - Recipes and ingredients (with calories and protein per 100 g) are in `meals-data.js`.
