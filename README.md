@@ -1,26 +1,26 @@
 # Gym Program (PWA)
 
-App program gym untuk iPhone: animasi cara gerakan, pencatat beban dan repetisi, timer istirahat, dan riwayat latihan. Semua file total kurang dari 100 KB.
+A gym program app for iPhone: animated exercise demos, weight and rep logging, rest timer, and workout history. All files total less than 100 KB.
 
-## Upload ke GitHub Pages
+## Upload to GitHub Pages
 
-1. Buat repository baru di GitHub, misalnya `gym`, dengan pilihan **Public**.
-2. Klik **Add file → Upload files**, lalu upload semua file di folder ini (index.html, sw.js, manifest.webmanifest, dan 3 file PNG). Klik **Commit changes**.
-3. Buka **Settings → Pages**. Di bagian *Branch*, pilih `main` dan folder `/ (root)`, lalu **Save**.
-4. Tunggu 1–2 menit. Alamat app: `https://USERNAME.github.io/gym/`
+1. Create a new GitHub repository, for example `gym`, set to **Public**.
+2. Click **Add file → Upload files**, then upload every file in this folder (index.html, sw.js, manifest.webmanifest, and the 3 PNG files). Click **Commit changes**.
+3. Open **Settings → Pages**. Under *Branch*, select `main` and the `/ (root)` folder, then **Save**.
+4. Wait 1–2 minutes. The app address is `https://USERNAME.github.io/gym/`
 
-## Pasang di iPhone
+## Install on iPhone
 
-1. Buka alamat di atas lewat **Safari**.
-2. Tekan tombol **Share**, lalu **Add to Home Screen**.
-3. Buka dari icon di Home Screen. Setelah dibuka sekali saat online, app tetap jalan offline.
+1. Open the address above in **Safari**.
+2. Tap the **Share** button, then **Add to Home Screen**.
+3. Launch the app from its Home Screen icon. After opening it once while online, the app keeps working offline.
 
-## Update app
+## Updating the app
 
-Ubah `index.html`, lalu di `sw.js` naikkan versinya (misalnya `gym-v1` menjadi `gym-v2`). Upload ulang kedua file. Di iPhone, tutup dan buka app 1–2 kali.
+Edit `index.html`, then bump the version in `sw.js` (for example `gym-v1` to `gym-v2`). Upload both files again. On the iPhone, close and reopen the app 1–2 times.
 
-## Catatan
+## Notes
 
-- Data latihan tersimpan di iPhone masing-masing. Menghapus icon dari Home Screen ikut menghapus data.
-- Bunyi timer tidak terdengar kalau iPhone dalam mode senyap.
-- Program dan gerakan bisa diubah di bagian `EX` dan `PROGRAMS` di dalam `index.html`.
+- Workout data is stored on each iPhone. Removing the icon from the Home Screen also deletes the data.
+- The timer sound is not audible when the iPhone is in silent mode.
+- Programs and exercises can be edited in the `EX` and `PROGRAMS` sections inside `index.html`.
