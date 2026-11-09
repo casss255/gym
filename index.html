@@ -1,0 +1,1295 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gym Program</title>
+<meta name="description" content="Program latihan gym dengan animasi cara gerakan, pencatat set, dan timer istirahat.">
+<meta name="theme-color" content="#E8EBEE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Gym">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<link rel="icon" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #E8EBEE;
+  --surface: #FFFFFF;
+  --sunk: #F2F4F6;
+  --ink: #17202A;
+  --muted: #5A6572;
+  --line: #D3D9DF;
+  --equip: #8C96A1;
+  --blue: #1D5FD1;
+  --red: #D62839;
+  --green: #1E9A57;
+  --yellow: #E8A800;
+  --accent: var(--ink);
+  --on-accent: #FFFFFF;
+  --done: #1E9A57;
+  --display: 'Barlow Condensed', 'Arial Narrow', 'Roboto Condensed', system-ui, sans-serif;
+  --body: 'Barlow', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #101418;
+    --surface: #1A2027;
+    --sunk: #141920;
+    --ink: #E7EBEF;
+    --muted: #97A3AF;
+    --line: #2B333C;
+    --equip: #5D6873;
+    --blue: #4C8BF5;
+    --red: #F04A5A;
+    --green: #34B873;
+    --yellow: #FFC433;
+    --on-accent: #101418;
+    --done: #34B873;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; background: var(--paper); }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--paper); color: var(--ink);
+  font: 400 16px/1.45 var(--body);
+  padding-top: env(safe-area-inset-top, 0px);
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+h1, h2, h3 { margin: 0; font-family: var(--display); font-weight: 700; line-height: 1.05; letter-spacing: .005em; }
+ol, ul { margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+
+#view {
+  max-width: 560px; margin: 0 auto;
+  padding: 12px 18px calc(96px + env(safe-area-inset-bottom, 0px));
+}
+body.in-workout #view { padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
+body.resting #view { padding-bottom: calc(330px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- Pictogram ---------- */
+.pict { width: 100%; height: 100%; display: block; overflow: visible; }
+.p-floor { stroke: var(--line); stroke-width: 3; stroke-linecap: round; }
+.p-equip { fill: var(--equip); }
+.p-leg { stroke: var(--equip); stroke-width: 4; stroke-linecap: round; fill: none; }
+.p-limb, .p-torso { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; stroke-width: 7; }
+.p-torso { stroke-width: 10; }
+.p-far { opacity: .32; }
+.p-head { fill: var(--ink); }
+.p-plate { fill: var(--plate, var(--blue)); }
+.p-hub { fill: var(--surface); }
+.p-db { fill: var(--plate, var(--blue)); stroke: var(--ink); stroke-width: 2; }
+
+.stage {
+  aspect-ratio: 6 / 5; width: 100%;
+  background: var(--surface);
+  border-radius: 20px;
+  border-top: 7px solid var(--plate, var(--ink));
+  padding: 6% 6% 3%;
+  overflow: hidden;
+}
+.thumb {
+  flex: none; width: 74px; aspect-ratio: 6 / 5;
+  background: var(--sunk); border-radius: 12px; padding: 5px 5px 2px;
+  border-left: 4px solid var(--plate, var(--ink));
+  overflow: hidden;
+}
+
+/* ---------- Headers ---------- */
+.screen-title { font-size: 40px; margin: 10px 0 18px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; margin-bottom: 6px; }
+.back { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding-right: 10px; color: var(--muted); font-weight: 500; }
+.back svg { width: 22px; height: 22px; }
+.sub { color: var(--muted); font-size: 15px; }
+.section-title { font-size: 22px; margin: 30px 0 10px; }
+
+/* ---------- Next workout hero ---------- */
+.hero { margin-bottom: 8px; }
+.hero .kicker { color: var(--muted); font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.hero h2 { font-size: 46px; }
+.hero .meta { color: var(--muted); margin: 4px 0 14px; }
+.hero .stage { margin-bottom: 14px; }
+.strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin: 0 -18px 16px; padding-left: 18px; padding-right: 18px; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.strip .thumb { width: 64px; }
+
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 54px; border-radius: 14px;
+  background: var(--accent); color: var(--on-accent);
+  font-family: var(--display); font-size: 22px; font-weight: 700; letter-spacing: .01em;
+}
+.btn:active { transform: scale(.985); }
+.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+.btn.small { min-height: 44px; font-size: 19px; }
+.link { color: var(--muted); font-weight: 600; min-height: 44px; display: inline-flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Program list ---------- */
+.prog { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.prog:last-child { border-bottom: 0; }
+.disc {
+  flex: none; width: 58px; height: 58px; border-radius: 50%;
+  border: 7px solid var(--ink); display: grid; place-items: center;
+  font-family: var(--display); font-weight: 700; font-size: 21px; line-height: 1;
+  position: relative;
+}
+.disc::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--paper); border: 2px solid var(--ink); display: none; }
+.prog h3 { font-size: 24px; }
+.prog .sub { font-size: 14px; }
+.prog .active-tag { color: var(--green); font-weight: 600; }
+.chev { margin-left: auto; color: var(--muted); flex: none; }
+.chev svg { width: 20px; height: 20px; display: block; }
+
+/* ---------- Program detail ---------- */
+.prog-head h1 { font-size: 44px; }
+.prog-head p { margin: 8px 0 0; max-width: 60ch; }
+.seg { display: flex; gap: 6px; background: var(--sunk); padding: 4px; border-radius: 14px; margin: 22px 0 6px; }
+.seg button { flex: 1; min-height: 42px; border-radius: 10px; font-family: var(--display); font-size: 19px; font-weight: 600; color: var(--muted); }
+.seg button[aria-selected="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 0 var(--line); }
+.ex-row { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.ex-row:last-child { border-bottom: 0; }
+.ex-row b { display: block; font-weight: 600; font-size: 17px; line-height: 1.2; }
+.ex-row .sub { font-size: 14px; }
+.sticky-cta {
+  position: fixed; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding: 10px 18px; background: linear-gradient(to bottom, transparent, var(--paper) 30%);
+}
+.sticky-cta .btn { max-width: 524px; margin: 0 auto; }
+.has-cta #view { padding-bottom: calc(170px + env(safe-area-inset-bottom, 0px)); }
+
+/* ---------- Library ---------- */
+.chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.chip { min-height: 38px; padding: 0 14px; border-radius: 999px; border: 2px solid var(--line); font-weight: 600; font-size: 15px; display: inline-flex; align-items: center; gap: 7px; }
+.chip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-accent); }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--plate); flex: none; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.card { text-align: left; display: flex; flex-direction: column; gap: 8px; }
+.card .stage { border-radius: 16px; border-top-width: 5px; padding: 8% 7% 3%; }
+.card b { font-weight: 600; font-size: 16px; line-height: 1.2; }
+.card .sub { font-size: 13px; margin-top: -6px; }
+
+/* ---------- Sheet (exercise detail) ---------- */
+.sheet {
+  position: fixed; inset: 0; z-index: 40; background: var(--paper);
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: calc(env(safe-area-inset-top, 0px) + 8px) 18px calc(30px + env(safe-area-inset-bottom, 0px));
+  animation: rise .28s cubic-bezier(.2, .8, .2, 1);
+}
+.sheet-inner { max-width: 560px; margin: 0 auto; }
+@keyframes rise { from { transform: translateY(40px); opacity: 0; } }
+.close { width: 44px; height: 44px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; }
+.close svg { width: 20px; height: 20px; }
+.sheet h1 { font-size: 40px; margin-top: 16px; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 4px; color: var(--muted); font-size: 15px; }
+.facts span { display: inline-flex; align-items: center; gap: 6px; }
+.steps { counter-reset: s; list-style: none; }
+.steps li { counter-increment: s; position: relative; padding: 0 0 14px 42px; max-width: 62ch; }
+.steps li::before {
+  content: counter(s); position: absolute; left: 0; top: -1px;
+  width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: var(--on-accent);
+  font-family: var(--display); font-weight: 700; font-size: 17px; display: grid; place-items: center;
+}
+.avoid { list-style: none; }
+.avoid li { position: relative; padding: 0 0 10px 30px; max-width: 62ch; }
+.avoid li::before { content: ''; position: absolute; left: 4px; top: 10px; width: 14px; height: 3px; border-radius: 2px; background: var(--red); }
+.note { background: var(--surface); border-radius: 14px; padding: 12px 14px; margin-top: 14px; font-size: 15px; }
+.stats { display: flex; gap: 10px; margin-top: 18px; }
+.stat { flex: 1; background: var(--surface); border-radius: 14px; padding: 10px 14px; }
+.stat small { color: var(--muted); font-size: 13px; display: block; }
+.stat strong { font-family: var(--display); font-size: 24px; font-weight: 700; }
+
+/* ---------- Workout ---------- */
+.wk-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; }
+.wk-top .count { font-weight: 600; color: var(--muted); font-size: 15px; }
+.wk-top .finish { min-height: 44px; padding: 0 4px; font-weight: 700; color: var(--green); }
+.progress { display: flex; gap: 4px; margin: 4px 0 14px; }
+.progress i { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.progress i.done { background: var(--ink); }
+.progress i.now { background: var(--plate, var(--ink)); }
+.wk-stage { position: relative; }
+.wk-stage .info {
+  position: absolute; right: 10px; top: 16px; min-height: 36px; padding: 0 12px; border-radius: 999px;
+  background: var(--sunk); font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+}
+.wk-name { font-size: 36px; margin: 16px 0 2px; }
+.wk-target { color: var(--muted); margin-bottom: 14px; }
+.prev { color: var(--muted); font-size: 14px; margin: -8px 0 12px; }
+
+.sets { background: var(--surface); border-radius: 18px; padding: 6px 12px 8px; }
+.set-head, .set-row { display: grid; grid-template-columns: 34px 1fr 1fr 52px; gap: 10px; align-items: center; }
+.set-head { color: var(--muted); font-size: 13px; font-weight: 600; padding: 6px 0 2px; }
+.set-head span:not(:first-child) { text-align: center; }
+.set-row { padding: 6px 0; border-top: 1px solid var(--line); }
+.set-row:first-of-type { border-top: 0; }
+.set-no { font-family: var(--display); font-size: 22px; font-weight: 700; text-align: center; color: var(--muted); }
+.set-row input {
+  width: 100%; min-height: 46px; border-radius: 12px; border: 2px solid var(--line);
+  background: var(--sunk); color: var(--ink); text-align: center;
+  font: 600 19px var(--body); padding: 0 6px; -webkit-appearance: none; appearance: none;
+}
+.set-row input::placeholder { color: var(--muted); opacity: .55; }
+.tick { width: 52px; height: 46px; border-radius: 12px; border: 2px solid var(--line); display: grid; place-items: center; color: var(--muted); }
+.tick svg { width: 24px; height: 24px; }
+.set-row.is-done .tick { background: var(--done); border-color: var(--done); color: #fff; }
+.set-row.is-done input { border-color: transparent; background: transparent; }
+.set-row.is-done .set-no { color: var(--done); }
+.add-set { width: 100%; min-height: 44px; color: var(--muted); font-weight: 600; border-top: 1px solid var(--line); margin-top: 4px; }
+
+.wk-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  padding: 10px 18px calc(10px + env(safe-area-inset-bottom, 0px));
+  background: var(--paper); border-top: 1px solid var(--line);
+}
+.wk-nav .row { max-width: 524px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.6fr; gap: 10px; }
+
+/* ---------- Rest timer ---------- */
+.rest {
+  position: fixed; left: 10px; right: 10px; z-index: 30;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  max-width: 540px; margin: 0 auto;
+  background: var(--ink); color: var(--on-accent);
+  border-radius: 22px;
+  padding: 14px 16px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  animation: rise .25s cubic-bezier(.2, .8, .2, 1);
+}
+.rest .in { max-width: 524px; margin: 0 auto; }
+.rest .top { display: flex; justify-content: space-between; align-items: baseline; }
+.rest .label { font-weight: 600; opacity: .75; }
+.rest .clock { font-family: var(--display); font-weight: 700; font-size: 60px; line-height: 1; font-variant-numeric: tabular-nums; }
+.rest .bar { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--on-accent) 22%, transparent); margin: 10px 0 14px; overflow: hidden; }
+.rest .bar i { display: block; height: 100%; background: var(--yellow); border-radius: 3px; }
+.rest .ctrl { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 8px; }
+.rest .ctrl button { min-height: 48px; border-radius: 12px; border: 2px solid color-mix(in srgb, var(--on-accent) 30%, transparent); font-weight: 700; }
+.rest .ctrl .skip { background: var(--on-accent); color: var(--ink); border-color: var(--on-accent); }
+.rest.over .clock { color: var(--yellow); }
+
+/* ---------- History ---------- */
+.summary { display: flex; gap: 10px; margin-bottom: 18px; }
+.summary .stat strong { font-size: 32px; }
+.log { background: var(--surface); border-radius: 18px; margin-bottom: 10px; }
+.log > button { width: 100%; text-align: left; display: flex; gap: 14px; padding: 14px; align-items: center; }
+.log .date { flex: none; width: 52px; text-align: center; font-family: var(--display); line-height: 1; }
+.log .date strong { font-size: 30px; font-weight: 700; display: block; }
+.log .date small { font-size: 14px; color: var(--muted); font-weight: 600; }
+.log h3 { font-size: 21px; }
+.log .detail { padding: 0 14px 14px 80px; font-size: 15px; }
+.log .detail p { margin: 0 0 6px; }
+.log .detail b { font-weight: 600; }
+.log .del { color: var(--red); font-weight: 600; min-height: 40px; }
+.empty { text-align: center; padding: 30px 10px; color: var(--muted); }
+.empty .btn { margin-top: 16px; }
+
+/* ---------- Tabs ---------- */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
+.tabs button { min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.tabs svg { width: 26px; height: 26px; }
+.tabs button[aria-current="page"] { color: var(--ink); }
+body.in-workout .tabs { display: none; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 60;
+  transform: translateX(-50%); background: var(--ink); color: var(--on-accent);
+  padding: 12px 18px; border-radius: 12px; font-weight: 600; font-size: 15px;
+  max-width: calc(100% - 36px); text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .rest { animation: none; }
+}
+
+</style>
+</head>
+<body>
+<main id="view"></main>
+<nav class="tabs" aria-label="Menu utama"><div class="in">
+  <button data-act="tab" data-tab="home" id="t-home"></button>
+  <button data-act="tab" data-tab="library" id="t-lib"></button>
+  <button data-act="tab" data-tab="history" id="t-hist"></button>
+</div></nav>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
+<div class="rest" id="rest" hidden></div>
+<div class="toast" id="toast" role="status" hidden></div>
+<script>
+/* ---------- Pictogram engine: animated stick-figure exercises drawn in SVG ---------- */
+const GROUND = 186;
+const DEG = Math.PI / 180;
+const SEG = { torso: 52, neck: 14, ua: 30, fa: 28, th: 40, sh: 40, ft: 12 };
+const SVGNS = 'http://www.w3.org/2000/svg';
+
+function resolvePose(p) {
+  const r = Object.assign({}, p);
+  if (r.h === undefined) r.h = r.t;
+  if (r.ft === undefined) r.ft = 90;
+  ['ua', 'fa', 'th', 'sh', 'ft'].forEach(k => { if (r[k + '2'] === undefined) r[k + '2'] = r[k]; });
+  return r;
+}
+function lerpAngle(a, b, u) { const d = ((b - a) % 360 + 540) % 360 - 180; return a + d * u; }
+function mixPose(A, B, u) { const o = {}; for (const k in A) o[k] = lerpAngle(A[k], B[k], u); return o; }
+const vec = (a, l) => [Math.sin(a * DEG) * l, Math.cos(a * DEG) * l];
+const add = (P, Q) => [P[0] + Q[0], P[1] + Q[1]];
+
+function forward(p, front) {
+  const m = front ? -1 : 1;
+  const so = front ? [12, 4] : [0, 0];
+  const ho = front ? [7, 0] : [0, 0];
+  const J = { hip: [0, 0] };
+  J.neck = vec(p.t, SEG.torso);
+  J.head = add(J.neck, vec(p.h, SEG.neck));
+  J.sh1 = add(J.neck, so);
+  J.sh2 = add(J.neck, [-so[0], so[1]]);
+  J.elbow = add(J.sh1, vec(p.ua, SEG.ua));
+  J.hand = add(J.elbow, vec(p.fa, SEG.fa));
+  J.elbow2 = add(J.sh2, vec(m * p.ua2, SEG.ua));
+  J.hand2 = add(J.elbow2, vec(m * p.fa2, SEG.fa));
+  J.hip1 = add(J.hip, ho);
+  J.hip2 = add(J.hip, [-ho[0], ho[1]]);
+  J.knee = add(J.hip1, vec(p.th, SEG.th));
+  J.ankle = add(J.knee, vec(p.sh, SEG.sh));
+  J.toe = add(J.ankle, vec(p.ft, SEG.ft));
+  J.knee2 = add(J.hip2, vec(m * p.th2, SEG.th));
+  J.ankle2 = add(J.knee2, vec(m * p.sh2, SEG.sh));
+  J.toe2 = add(J.ankle2, vec(m * p.ft2, SEG.ft));
+  return J;
+}
+
+function easeInOut(x) { return 0.5 - Math.cos(Math.PI * x) / 2; }
+/* cycle: go A→B, hold, return B→A, hold */
+function cycleU(phase) {
+  const p = phase % 1;
+  if (p < 0.42) return easeInOut(p / 0.42);
+  if (p < 0.52) return 1;
+  if (p < 0.92) return 1 - easeInOut((p - 0.52) / 0.40);
+  return 0;
+}
+
+function solveAt(anim, u) {
+  const A = anim._A || (anim._A = resolvePose(anim.poses[0]));
+  const B = anim._B || (anim._B = resolvePose(anim.poses[1]));
+  const J = forward(mixPose(A, B, u), anim.view === 'front');
+  const a = anim.anchor;
+  const off = [a.x - J[a.joint][0], a.y - J[a.joint][1]];
+  for (const k in J) J[k] = add(J[k], off);
+  return J;
+}
+
+function fitBox(anim) {
+  if (anim._box) return anim._box;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  const inc = (x, y, r = 0) => { x0 = Math.min(x0, x - r); y0 = Math.min(y0, y - r); x1 = Math.max(x1, x + r); y1 = Math.max(y1, y + r); };
+  for (let i = 0; i <= 10; i++) {
+    const J = solveAt(anim, i / 10);
+    for (const k in J) inc(J[k][0], J[k][1], k === 'head' ? 11 : 5);
+    (anim.props || []).forEach(pr => { if (pr.at) inc(J[pr.at][0], J[pr.at][1], (pr.r || 7) + 2); });
+  }
+  (anim.statics || []).forEach(s => {
+    if (s.type === 'bench') { inc(s.x1, s.y - 2); inc(s.x2, GROUND); }
+    if (s.type === 'bar') { inc(s.x - 8, s.y - 10); inc(s.x + 8, s.y + 6); }
+  });
+  if (!anim.noFloor) inc(x0, GROUND + 4);
+  const pad = 8;
+  x0 -= pad; y0 -= pad; x1 += pad; y1 += pad;
+  let w = Math.max(x1 - x0, 190), h = Math.max(y1 - y0, 158);
+  const cx = (x0 + x1) / 2;
+  if (w / h < 1.2) w = h * 1.2; else h = w / 1.2;
+  const bx = cx - w / 2;
+  const by = anim.noFloor ? (y0 + y1) / 2 - h / 2 : (GROUND + 4 + pad) - h;
+  return (anim._box = { x: bx, y: by, w, h });
+}
+
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+const pts = (...P) => P.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+
+function buildPict(anim, label) {
+  const box = fitBox(anim);
+  const svg = el('svg', { viewBox: `${box.x.toFixed(1)} ${box.y.toFixed(1)} ${box.w.toFixed(1)} ${box.h.toFixed(1)}`, class: 'pict', preserveAspectRatio: 'xMidYMax meet', role: 'img', 'aria-label': label || '' });
+  if (!anim.noFloor) el('line', { x1: box.x - 400, y1: GROUND, x2: box.x + box.w + 400, y2: GROUND, class: 'p-floor' }, svg);
+  (anim.statics || []).forEach(s => {
+    if (s.type === 'bench') {
+      el('rect', { x: s.x1, y: s.y, width: s.x2 - s.x1, height: 9, rx: 3, class: 'p-equip' }, svg);
+      el('line', { x1: s.x1 + 10, y1: s.y + 9, x2: s.x1 + 10, y2: GROUND, class: 'p-leg' }, svg);
+      el('line', { x1: s.x2 - 10, y1: s.y + 9, x2: s.x2 - 10, y2: GROUND, class: 'p-leg' }, svg);
+    }
+    if (s.type === 'bar') {
+      el('line', { x1: s.x - 40, y1: box.y - 2, x2: s.x - 40, y2: s.y, class: 'p-leg' }, svg);
+      el('line', { x1: s.x - 40, y1: s.y, x2: s.x, y2: s.y, class: 'p-leg' }, svg);
+      el('circle', { cx: s.x, cy: s.y, r: 4.5, class: 'p-equip' }, svg);
+    }
+  });
+  const front = anim.view === 'front';
+  const g = {
+    farArm: el('polyline', { class: front ? 'p-limb' : 'p-limb p-far' }, svg),
+    farLeg: el('polyline', { class: front ? 'p-limb' : 'p-limb p-far' }, svg),
+    torso: el('polyline', { class: 'p-torso' }, svg),
+    head: el('circle', { r: 10, class: 'p-head' }, svg),
+    props: (anim.props || []).map(pr => {
+      if (pr.type === 'plate') {
+        const grp = el('g', {}, svg);
+        el('circle', { r: pr.r || 18, class: 'p-plate' }, grp);
+        el('circle', { r: 4, class: 'p-hub' }, grp);
+        return grp;
+      }
+      return el('circle', { r: 6.5, class: 'p-db' }, svg);
+    }),
+    nearLeg: el('polyline', { class: 'p-limb' }, svg),
+    nearArm: el('polyline', { class: 'p-limb' }, svg),
+  };
+  return { svg, g, anim };
+}
+
+function drawPict(P, u) {
+  const { g, anim } = P;
+  const J = solveAt(anim, u);
+  const front = anim.view === 'front';
+  const fo = front ? [0, 0] : [-3, -2.5];
+  const f = k => add(J[k], fo);
+  g.farArm.setAttribute('points', pts(f('sh2'), f('elbow2'), f('hand2')));
+  g.farLeg.setAttribute('points', pts(f('hip2'), f('knee2'), f('ankle2'), f('toe2')));
+  g.torso.setAttribute('points', front ? pts(J.hip2, J.hip1, J.hip, J.neck, J.sh2, J.sh1) : pts(J.hip, J.neck));
+  g.head.setAttribute('cx', J.head[0].toFixed(1));
+  g.head.setAttribute('cy', J.head[1].toFixed(1));
+  (anim.props || []).forEach((pr, i) => {
+    const p = J[pr.at];
+    if (pr.type === 'plate') g.props[i].setAttribute('transform', `translate(${p[0].toFixed(1)} ${p[1].toFixed(1)})`);
+    else { g.props[i].setAttribute('cx', p[0].toFixed(1)); g.props[i].setAttribute('cy', p[1].toFixed(1)); }
+  });
+  g.nearLeg.setAttribute('points', pts(J.hip1, J.knee, J.ankle, J.toe));
+  g.nearArm.setAttribute('points', pts(J.sh1, J.elbow, J.hand));
+}
+
+/* ---------- Animation loop: only visible pictograms are animated ---------- */
+const Pict = (() => {
+  const live = new Set();
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let raf = 0;
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+    entries.forEach(e => { const P = e.target._pict; if (P) P.visible = e.isIntersecting; });
+  }) : null;
+  function loop(now) {
+    raf = 0;
+    let any = false;
+    live.forEach(P => {
+      if (!P.svg.isConnected) { live.delete(P); if (io) io.unobserve(P.host); return; }
+      if (!P.visible) return;
+      any = true;
+      drawPict(P, cycleU((now + P.offset) / (P.anim.dur || 2800)));
+    });
+    if (any || live.size) raf = requestAnimationFrame(loop);
+  }
+  function mount(host, anim, label, still) {
+    host.innerHTML = '';
+    const P = buildPict(anim, label);
+    host.appendChild(P.svg);
+    P.host = host; P.visible = true; P.offset = 0;
+    drawPict(P, anim.still !== undefined ? anim.still : 1);
+    host._pict = P;
+    if (!reduce && !still) {
+      live.add(P);
+      if (io) io.observe(host);
+      if (!raf) raf = requestAnimationFrame(loop);
+    }
+    return P;
+  }
+  return { mount, reduce };
+})();
+
+/* ---------- Kategori: warna mengikuti warna piringan beban ---------- */
+const CATS = {
+  kaki:   { name: 'Kaki',   color: 'var(--blue)' },
+  dorong: { name: 'Dorong', color: 'var(--red)' },
+  tarik:  { name: 'Tarik',  color: 'var(--green)' },
+  perut:  { name: 'Perut',  color: 'var(--yellow)' },
+};
+
+const A = GROUND - 4; // tinggi pergelangan kaki saat berdiri
+
+const EX = {
+  squat: {
+    name: 'Barbell Squat', cat: 'kaki', equip: 'Barbell + rack',
+    muscles: ['Paha depan', 'Bokong', 'Paha belakang', 'Core'],
+    steps: [
+      'Letakkan barbell di punggung atas (bukan di leher). Kaki selebar bahu, ujung kaki sedikit menghadap keluar.',
+      'Tarik napas, kencangkan perut, lalu dorong pinggul ke belakang dan ke bawah seperti mau duduk.',
+      'Turun sampai paha minimal sejajar lantai. Lutut bergerak searah ujung kaki.',
+      'Dorong lantai dengan seluruh telapak kaki untuk kembali berdiri.',
+    ],
+    avoid: ['Lutut masuk ke dalam saat naik.', 'Tumit terangkat dari lantai.', 'Punggung bawah membulat di posisi bawah.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 112, y: A },
+      poses: [
+        { t: 180, ua: -22, fa: 172, th: 0, sh: 0 },
+        { t: 132, ua: -70, fa: 124, th: 82, sh: -26 },
+      ],
+      props: [{ type: 'plate', at: 'hand', r: 16 }],
+    },
+  },
+  airsquat: {
+    name: 'Bodyweight Squat', cat: 'kaki', equip: 'Tanpa alat', bw: true,
+    muscles: ['Paha depan', 'Bokong'],
+    steps: [
+      'Berdiri dengan kaki selebar bahu, ujung kaki sedikit keluar.',
+      'Luruskan tangan ke depan untuk keseimbangan, lalu dorong pinggul ke belakang dan ke bawah.',
+      'Turun sampai paha sejajar lantai dengan dada tetap tegak.',
+      'Dorong lantai dan kembali berdiri.',
+    ],
+    avoid: ['Lutut masuk ke dalam.', 'Tumit terangkat.', 'Turun terlalu cepat tanpa kontrol.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 108, y: A },
+      poses: [
+        { t: 180, ua: 88, fa: 90, th: 0, sh: 0 },
+        { t: 140, ua: 92, fa: 92, th: 84, sh: -28 },
+      ],
+    },
+  },
+  bench: {
+    name: 'Bench Press', cat: 'dorong', equip: 'Barbell + bench',
+    muscles: ['Dada', 'Bahu depan', 'Trisep'],
+    steps: [
+      'Berbaring dengan mata tepat di bawah barbell. Kaki menapak di lantai.',
+      'Pegang barbell sedikit lebih lebar dari bahu dan rapatkan tulang belikat ke bench.',
+      'Turunkan perlahan ke dada bagian bawah, siku sekitar 45° dari badan.',
+      'Dorong naik sampai lengan lurus.',
+    ],
+    avoid: ['Siku melebar 90° ke samping.', 'Bokong terangkat dari bench.', 'Memantulkan barbell di dada.'],
+    note: 'Pakai spotter atau safety bar kalau beban berat.',
+    anim: {
+      anchor: { joint: 'hip', x: 140, y: GROUND - 52 },
+      poses: [
+        { t: -90, h: -90, ua: 180, fa: 180, th: 80, sh: -8 },
+        { t: -90, h: -90, ua: 40, fa: -175, th: 80, sh: -8 },
+      ],
+      statics: [{ type: 'bench', x1: 58, x2: 150, y: GROUND - 45 }],
+      props: [{ type: 'plate', at: 'hand', r: 18 }],
+      still: 0,
+    },
+  },
+  pushup: {
+    name: 'Push-up', cat: 'dorong', equip: 'Tanpa alat', bw: true,
+    muscles: ['Dada', 'Trisep', 'Bahu', 'Core'],
+    steps: [
+      'Tangan di lantai sedikit lebih lebar dari bahu. Badan lurus dari kepala sampai tumit.',
+      'Kencangkan perut dan bokong.',
+      'Turunkan dada sampai hampir menyentuh lantai, siku mengarah agak ke belakang.',
+      'Dorong lantai sampai lengan lurus kembali.',
+    ],
+    avoid: ['Pinggul turun atau terlalu tinggi.', 'Kepala menunduk duluan.'],
+    note: 'Belum kuat? Lakukan dengan lutut di lantai.',
+    anim: {
+      anchor: { joint: 'toe', x: 40, y: GROUND - 2 },
+      poses: [
+        { t: 111, ua: 0, fa: 0, th: -69, sh: -69, ft: 15 },
+        { t: 93, ua: -100, fa: 40, th: -87, sh: -87, ft: 15 },
+      ],
+    },
+  },
+  deadlift: {
+    name: 'Deadlift', cat: 'tarik', equip: 'Barbell',
+    muscles: ['Paha belakang', 'Bokong', 'Punggung bawah', 'Punggung atas'],
+    steps: [
+      'Berdiri dengan barbell di atas tengah telapak kaki.',
+      'Bungkuk dari pinggul, pegang barbell tepat di luar tulang kering, lalu tekuk lutut sampai tulang kering menyentuh barbell.',
+      'Luruskan punggung, dada naik, tarik napas dan kencangkan perut.',
+      'Dorong lantai sampai berdiri tegak, barbell tetap menempel di kaki. Turunkan dengan urutan terbalik.',
+    ],
+    avoid: ['Punggung membulat.', 'Barbell menjauh dari kaki.', 'Menarik dengan lengan, bukan dorongan kaki.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 100, y: A },
+      poses: [
+        { t: 120, ua: -6, fa: -6, th: 70, sh: -15 },
+        { t: 180, ua: 0, fa: 0, th: 0, sh: 0 },
+      ],
+      props: [{ type: 'plate', at: 'hand', r: 22 }],
+      still: 0,
+    },
+  },
+  rdl: {
+    name: 'Romanian Deadlift', cat: 'kaki', equip: 'Barbell atau dumbbell',
+    muscles: ['Paha belakang', 'Bokong', 'Punggung bawah'],
+    steps: [
+      'Berdiri memegang barbell di depan paha, lutut sedikit ditekuk.',
+      'Dorong pinggul ke belakang. Barbell meluncur turun dekat paha.',
+      'Turun sampai paha belakang terasa tertarik, biasanya sekitar bawah lutut. Punggung tetap lurus.',
+      'Kembali berdiri dengan mendorong pinggul ke depan.',
+    ],
+    avoid: ['Lutut ditekuk terlalu banyak sehingga jadi squat.', 'Punggung membulat.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 100, y: A },
+      poses: [
+        { t: 180, ua: 0, fa: 0, th: 0, sh: 0 },
+        { t: 122, ua: -10, fa: -10, th: 34, sh: -8 },
+      ],
+      props: [{ type: 'plate', at: 'hand', r: 18 }],
+    },
+  },
+  row: {
+    name: 'Barbell Row', cat: 'tarik', equip: 'Barbell',
+    muscles: ['Punggung atas', 'Lat', 'Bisep'],
+    steps: [
+      'Pegang barbell, bungkuk dari pinggul sampai badan sekitar 45° atau lebih rendah. Lutut sedikit ditekuk.',
+      'Tarik barbell ke perut bagian bawah, siku bergerak ke belakang.',
+      'Rapatkan tulang belikat di atas.',
+      'Turunkan perlahan sampai lengan lurus.',
+    ],
+    avoid: ['Badan naik-turun mengayun.', 'Menarik ke arah dada.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 100, y: A },
+      poses: [
+        { t: 110, ua: 0, fa: 0, th: 40, sh: -12 },
+        { t: 112, ua: -82, fa: 4, th: 40, sh: -12 },
+      ],
+      props: [{ type: 'plate', at: 'hand', r: 18 }],
+      still: 0,
+    },
+  },
+  ohp: {
+    name: 'Overhead Press', cat: 'dorong', equip: 'Barbell',
+    muscles: ['Bahu', 'Trisep', 'Core'],
+    steps: [
+      'Barbell di depan bahu, pegangan selebar bahu, siku sedikit di depan barbell.',
+      'Kencangkan perut dan bokong.',
+      'Dorong lurus ke atas. Tarik kepala sedikit ke belakang agar barbell lewat, lalu masukkan kepala lagi di bawah barbell.',
+      'Turunkan perlahan ke depan bahu.',
+    ],
+    avoid: ['Punggung melengkung ke belakang berlebihan.', 'Mendorong ke depan, bukan ke atas.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 112, y: A },
+      poses: [
+        { t: 182, ua: 30, fa: -165, th: 0, sh: 0 },
+        { t: 180, ua: 178, fa: 180, th: 0, sh: 0 },
+      ],
+      props: [{ type: 'plate', at: 'hand', r: 18 }],
+      still: 0,
+    },
+  },
+  pullup: {
+    name: 'Pull-up', cat: 'tarik', equip: 'Palang pull-up',
+    muscles: ['Lat', 'Punggung atas', 'Bisep'],
+    steps: [
+      'Pegang palang sedikit lebih lebar dari bahu dan menggantung dengan lengan lurus.',
+      'Tarik bahu ke bawah dulu, lalu tarik badan sampai dagu melewati palang.',
+      'Turun perlahan sampai lengan lurus kembali.',
+    ],
+    avoid: ['Mengayun kaki untuk membantu.', 'Hanya setengah gerakan.'],
+    note: 'Belum bisa? Pakai resistance band, mesin assisted pull-up, atau lat pulldown.',
+    anim: {
+      anchor: { joint: 'hand', x: 120, y: 20 },
+      noFloor: true,
+      poses: [
+        { t: 183, ua: 180, fa: 180, th: 8, sh: -35 },
+        { t: 192, ua: 22, fa: 176, th: 14, sh: -40 },
+      ],
+      statics: [{ type: 'bar', x: 120, y: 20 }],
+      still: 0,
+    },
+  },
+  curl: {
+    name: 'Dumbbell Curl', cat: 'tarik', equip: 'Dumbbell',
+    muscles: ['Bisep', 'Lengan bawah'],
+    steps: [
+      'Berdiri tegak, dumbbell di samping badan, telapak tangan menghadap depan.',
+      'Siku menempel di sisi badan, angkat dumbbell ke arah bahu.',
+      'Tahan sebentar, lalu turunkan perlahan sampai lengan lurus.',
+    ],
+    avoid: ['Mengayun badan untuk mengangkat.', 'Siku maju ke depan.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 112, y: A },
+      poses: [
+        { t: 180, ua: 2, fa: 2, th: 0, sh: 0 },
+        { t: 180, ua: 6, fa: 160, th: 0, sh: 0 },
+      ],
+      props: [{ type: 'db', at: 'hand' }],
+    },
+  },
+  triceps: {
+    name: 'Overhead Triceps Extension', cat: 'dorong', equip: 'Dumbbell',
+    muscles: ['Trisep'],
+    steps: [
+      'Pegang satu dumbbell dengan dua tangan, angkat lurus di atas kepala.',
+      'Siku tetap mengarah ke atas, turunkan dumbbell ke belakang kepala.',
+      'Luruskan lengan kembali ke atas.',
+    ],
+    avoid: ['Siku melebar ke samping.', 'Punggung melengkung.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 112, y: A },
+      poses: [
+        { t: 180, ua: 178, fa: 180, th: 0, sh: 0 },
+        { t: 180, ua: 160, fa: -55, th: 0, sh: 0 },
+      ],
+      props: [{ type: 'db', at: 'hand' }],
+      still: 0,
+    },
+  },
+  latraise: {
+    name: 'Lateral Raise', cat: 'dorong', equip: 'Dumbbell',
+    muscles: ['Bahu samping'],
+    steps: [
+      'Berdiri tegak, dumbbell di samping badan, siku sedikit ditekuk.',
+      'Angkat kedua dumbbell ke samping sampai setinggi bahu.',
+      'Turunkan perlahan.',
+    ],
+    avoid: ['Beban terlalu berat sampai badan mengayun.', 'Bahu ikut terangkat ke telinga.'],
+    anim: {
+      view: 'front',
+      anchor: { joint: 'hip', x: 120, y: A - 80 },
+      poses: [
+        { t: 180, ua: 12, fa: 14, th: 3, sh: 0, ft: 90 },
+        { t: 180, ua: 86, fa: 94, th: 3, sh: 0, ft: 90 },
+      ],
+      props: [{ type: 'db', at: 'hand' }, { type: 'db', at: 'hand2' }],
+    },
+  },
+  lunge: {
+    name: 'Split Squat', cat: 'kaki', equip: 'Tanpa alat atau dumbbell', bw: true,
+    muscles: ['Paha depan', 'Bokong'],
+    steps: [
+      'Langkahkan satu kaki ke depan. Kaki belakang bertumpu di ujung jari.',
+      'Turunkan badan lurus ke bawah sampai kedua lutut sekitar 90°.',
+      'Lutut belakang hampir menyentuh lantai.',
+      'Dorong dengan kaki depan untuk naik. Selesaikan semua repetisi, lalu ganti kaki.',
+    ],
+    avoid: ['Badan condong jauh ke depan.', 'Lutut depan masuk ke dalam.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 150, y: A },
+      poses: [
+        { t: 180, ua: 0, fa: 0, th: 35, sh: 0, th2: -30, sh2: -45, ft2: -17 },
+        { t: 180, ua: 0, fa: 0, th: 90, sh: 0, th2: 0, sh2: -105, ft2: 20 },
+      ],
+    },
+  },
+  bridge: {
+    name: 'Glute Bridge', cat: 'kaki', equip: 'Tanpa alat', bw: true,
+    muscles: ['Bokong', 'Paha belakang'],
+    steps: [
+      'Berbaring, lutut ditekuk, telapak kaki di lantai selebar pinggul.',
+      'Kencangkan perut, tekan tumit ke lantai dan angkat pinggul.',
+      'Di atas, bahu, pinggul, dan lutut membentuk garis lurus. Remas bokong 1 detik.',
+      'Turunkan perlahan.',
+    ],
+    avoid: ['Punggung bawah melengkung berlebihan di atas.', 'Mendorong dengan ujung jari kaki, bukan tumit.'],
+    anim: {
+      anchor: { joint: 'ankle', x: 150, y: A },
+      poses: [
+        { t: -90, h: -90, ua: 88, fa: 90, th: 150, sh: 15 },
+        { t: -66, h: -90, ua: 88, fa: 90, th: 114, sh: 0 },
+      ],
+    },
+  },
+  calf: {
+    name: 'Calf Raise', cat: 'kaki', equip: 'Tanpa alat atau dumbbell', bw: true,
+    muscles: ['Betis'],
+    steps: [
+      'Berdiri tegak. Bisa di pinggir anak tangga agar jangkauan lebih panjang.',
+      'Angkat tumit setinggi mungkin.',
+      'Tahan 1 detik di atas, lalu turunkan perlahan.',
+    ],
+    avoid: ['Gerakan memantul terlalu cepat.'],
+    anim: {
+      anchor: { joint: 'toe', x: 124, y: A },
+      poses: [
+        { t: 180, ua: 0, fa: 0, th: 0, sh: 0, ft: 90 },
+        { t: 180, ua: 0, fa: 0, th: 0, sh: 0, ft: 42 },
+      ],
+      dur: 2200,
+    },
+  },
+  plank: {
+    name: 'Plank', cat: 'perut', equip: 'Tanpa alat', bw: true, timed: true,
+    muscles: ['Core', 'Bahu'],
+    steps: [
+      'Siku tepat di bawah bahu, lengan bawah di lantai.',
+      'Angkat badan dengan tumpuan siku dan ujung kaki.',
+      'Badan lurus dari kepala sampai tumit. Kencangkan perut dan bokong.',
+      'Tahan sambil bernapas normal.',
+    ],
+    avoid: ['Pinggul turun.', 'Pinggul terlalu tinggi.'],
+    anim: {
+      anchor: { joint: 'elbow', x: 168, y: GROUND - 3 },
+      poses: [
+        { t: 97, ua: 0, fa: 90, th: -83, sh: -83, ft: 0 },
+        { t: 98, ua: 0, fa: 90, th: -82, sh: -82, ft: 0 },
+      ],
+      dur: 3200,
+    },
+  },
+  crunch: {
+    name: 'Crunch', cat: 'perut', equip: 'Tanpa alat', bw: true,
+    muscles: ['Perut'],
+    steps: [
+      'Berbaring, lutut ditekuk, telapak kaki di lantai.',
+      'Kencangkan perut, angkat kepala dan bahu dari lantai. Tangan meraih ke arah lutut.',
+      'Turunkan perlahan.',
+    ],
+    avoid: ['Menarik leher dengan tangan.', 'Gerakan terlalu cepat.'],
+    anim: {
+      anchor: { joint: 'hip', x: 110, y: GROUND - 8 },
+      poses: [
+        { t: -90, h: -90, ua: 92, fa: 92, th: 150, sh: 15 },
+        { t: -122, h: -112, ua: 100, fa: 100, th: 150, sh: 15 },
+      ],
+    },
+  },
+};
+
+/* ---------- Program ---------- */
+const PROGRAMS = [
+  {
+    id: 'fullbody', name: 'Full Body Pemula', freq: 3, level: 'Pemula',
+    desc: 'Tiga kali seminggu, gantian Hari A dan B. Cocok untuk 3 bulan pertama di gym.',
+    days: [
+      { name: 'Hari A', items: [['squat', 3, '8–10'], ['bench', 3, '8–10'], ['row', 3, '8–10'], ['plank', 3, '30–45', 'detik']] },
+      { name: 'Hari B', items: [['rdl', 3, '8–10'], ['ohp', 3, '8–10'], ['pullup', 3, 'maks'], ['lunge', 3, '10', 'rep/kaki'], ['crunch', 3, '15']] },
+    ],
+  },
+  {
+    id: 'upperlower', name: 'Upper / Lower', freq: 4, level: 'Menengah',
+    desc: 'Empat kali seminggu: badan atas, badan bawah, istirahat, ulangi.',
+    days: [
+      { name: 'Upper', items: [['bench', 4, '6–8'], ['row', 4, '8–10'], ['ohp', 3, '8–10'], ['pullup', 3, 'maks'], ['curl', 3, '10–12'], ['triceps', 3, '10–12']] },
+      { name: 'Lower', items: [['squat', 4, '6–8'], ['rdl', 3, '8–10'], ['lunge', 3, '10', 'rep/kaki'], ['bridge', 3, '12'], ['calf', 4, '15'], ['plank', 3, '45', 'detik']] },
+    ],
+  },
+  {
+    id: 'ppl', name: 'Push Pull Legs', freq: 6, level: 'Menengah',
+    desc: 'Dorong, tarik, kaki. Jalankan 3 hari seminggu, atau 6 hari kalau sudah terbiasa.',
+    days: [
+      { name: 'Push', items: [['bench', 4, '6–8'], ['ohp', 3, '8–10'], ['pushup', 3, 'maks'], ['latraise', 3, '12–15'], ['triceps', 3, '10–12']] },
+      { name: 'Pull', items: [['deadlift', 3, '5'], ['pullup', 3, 'maks'], ['row', 3, '8–10'], ['curl', 3, '10–12']] },
+      { name: 'Legs', items: [['squat', 4, '6–8'], ['rdl', 3, '8–10'], ['lunge', 3, '10', 'rep/kaki'], ['calf', 4, '15'], ['crunch', 3, '15']] },
+    ],
+  },
+  {
+    id: 'homeworkout', name: 'Tanpa Alat', freq: 3, level: 'Semua level',
+    desc: 'Untuk di rumah atau saat bepergian. Tidak perlu alat apa pun.',
+    days: [
+      { name: 'Sirkuit', items: [['airsquat', 3, '15'], ['pushup', 3, 'maks'], ['lunge', 3, '10', 'rep/kaki'], ['bridge', 3, '15'], ['plank', 3, '30–45', 'detik'], ['crunch', 3, '15']] },
+    ],
+  },
+];
+
+/* ---------- Penyimpanan ---------- */
+const KEY = 'gymapp.v1';
+const S = Object.assign({ active: null, rest: 90, history: [], session: null }, (() => {
+  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+})());
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ---------- Ikon ---------- */
+const I = {
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  chev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  prog: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 13h20"/><rect x="5.5" y="6" width="3.5" height="14" rx="1.2" fill="currentColor" stroke="none"/><rect x="17" y="6" width="3.5" height="14" rx="1.2" fill="currentColor" stroke="none"/><path d="M2.5 10v6M23.5 10v6"/></svg>',
+  lib: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="2.4" fill="currentColor" stroke="none"/><path d="M13 8.5v8M13 10.5l-6 3M13 10.5l6-3M13 16.5l-4 7M13 16.5l4 7"/></svg>',
+  hist: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="9.5"/><path d="M13 7.5V13l3.8 2.4"/></svg>',
+  info: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.1"/></svg>',
+};
+
+/* ---------- Bantuan ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const prog = id => PROGRAMS.find(p => p.id === id);
+const plate = id => CATS[EX[id].cat].color;
+const unitOf = it => it[3] || (EX[it[0]].timed ? 'detik' : 'rep');
+const fmtTarget = it => `${it[1]} set × ${it[2]} ${unitOf(it)}`;
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; };
+const fmtKg = n => (Math.round(n * 10) / 10).toLocaleString('id-ID');
+const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+
+function nextDayIdx(pid) {
+  const p = prog(pid);
+  const last = S.history.find(h => h.pid === pid);
+  if (!last) return 0;
+  const i = p.days.findIndex(d => d.name === last.day);
+  return (i + 1) % p.days.length;
+}
+function lastSetsFor(id) {
+  for (const h of S.history) { const e = h.ex.find(x => x.id === id); if (e && e.sets.length) return e.sets; }
+  return null;
+}
+function bestFor(id) {
+  let best = null;
+  S.history.forEach(h => h.ex.forEach(e => {
+    if (e.id !== id) return;
+    e.sets.forEach(s => {
+      const score = num(s.kg) * 1000 + num(s.reps);
+      if (!best || score > best.score) best = { score, kg: s.kg, reps: s.reps };
+    });
+  }));
+  return best;
+}
+function setsText(id, sets) {
+  const timed = EX[id].timed;
+  return sets.map(s => num(s.kg) ? `${fmtKg(num(s.kg))} kg × ${s.reps}` : `${s.reps}${timed ? ' dtk' : ' rep'}`).join(', ');
+}
+function estMinutes(day) { return Math.round(day.items.reduce((a, it) => a + it[1], 0) * 2.4 / 5) * 5; }
+
+/* ---------- Navigasi ---------- */
+let nav = { tab: 'home', view: 'home', pid: null, day: 0, filter: 'all', open: null };
+function go(patch) { Object.assign(nav, patch); render(); window.scrollTo(0, 0); }
+
+function render() {
+  const v = $('#view');
+  const inWorkout = nav.view === 'workout' && S.session;
+  document.body.classList.toggle('in-workout', !!inWorkout);
+  document.body.classList.toggle('has-cta', nav.view === 'program');
+  if (inWorkout) v.innerHTML = viewWorkout();
+  else if (nav.view === 'program') v.innerHTML = viewProgram();
+  else if (nav.view === 'library') v.innerHTML = viewLibrary();
+  else if (nav.view === 'history') v.innerHTML = viewHistory();
+  else v.innerHTML = viewHome();
+  document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === nav.tab ? 'page' : 'false'));
+  mountStages(v);
+  renderRest();
+}
+function mountStages(root) {
+  root.querySelectorAll('[data-pict]').forEach(h => {
+    const id = h.dataset.pict;
+    h.style.setProperty('--plate', plate(id));
+    Pict.mount(h, EX[id].anim, EX[id].name, h.hasAttribute('data-still'));
+  });
+}
+
+/* ---------- Beranda ---------- */
+function viewHome() {
+  let hero = '';
+  if (S.session) {
+    const p = prog(S.session.pid);
+    const cur = S.session.ex[S.session.idx];
+    hero = `<section class="hero">
+      <div class="kicker">Latihan sedang berjalan</div>
+      <h2>${esc(S.session.day)}</h2>
+      <div class="meta">${esc(p.name)}. Gerakan ${S.session.idx + 1} dari ${S.session.ex.length}: ${esc(EX[cur.id].name)}</div>
+      <div class="stage" data-pict="${cur.id}"></div>
+      <button class="btn" data-act="resume">Lanjutkan latihan</button>
+    </section>`;
+  } else if (S.active) {
+    const p = prog(S.active), di = nextDayIdx(S.active), d = p.days[di];
+    hero = `<section class="hero">
+      <div class="kicker">Latihan berikutnya</div>
+      <h2>${esc(d.name)}</h2>
+      <div class="meta">${esc(p.name)}. ${d.items.length} gerakan, sekitar ${estMinutes(d)} menit</div>
+      <div class="stage" data-pict="${d.items[0][0]}"></div>
+      <div class="strip">${d.items.slice(1).map(it => `<div class="thumb" data-pict="${it[0]}" data-still></div>`).join('')}</div>
+      <button class="btn" data-act="start" data-pid="${p.id}" data-day="${di}">Mulai ${esc(d.name)}</button>
+      <button class="link" data-act="open-prog" data-pid="${p.id}" data-day="${di}">Lihat isi program</button>
+    </section>`;
+  } else {
+    hero = `<h1 class="screen-title">Pilih program</h1>
+      <p class="sub" style="margin:-8px 0 8px">Belum pernah ke gym? Mulai dari Full Body Pemula.</p>`;
+  }
+  return `${hero}
+    ${S.active || S.session ? '<h2 class="section-title">Semua program</h2>' : ''}
+    <div>${PROGRAMS.map(p => `
+      <button class="prog" data-act="open-prog" data-pid="${p.id}">
+        <span class="disc" aria-hidden="true">${p.freq}×</span>
+        <span><h3>${esc(p.name)}</h3>
+        <span class="sub">${p.freq}× seminggu, ${esc(p.level)}${S.active === p.id ? ' <span class="active-tag">Program kamu</span>' : ''}</span></span>
+        <span class="chev">${I.chev}</span>
+      </button>`).join('')}</div>`;
+}
+
+/* ---------- Detail program ---------- */
+function viewProgram() {
+  const p = prog(nav.pid), d = p.days[nav.day];
+  return `<div class="topbar"><button class="back" data-act="home">${I.back}Program</button></div>
+    <header class="prog-head">
+      <h1>${esc(p.name)}</h1>
+      <div class="sub">${p.freq}× seminggu, ${esc(p.level)}</div>
+      <p>${esc(p.desc)}</p>
+    </header>
+    ${p.days.length > 1 ? `<div class="seg" role="tablist">${p.days.map((x, i) =>
+      `<button role="tab" aria-selected="${i === nav.day}" data-act="day" data-day="${i}">${esc(x.name)}</button>`).join('')}</div>` : '<div style="height:18px"></div>'}
+    <div>${d.items.map(it => `
+      <button class="ex-row" data-act="ex" data-id="${it[0]}">
+        <span class="thumb" data-pict="${it[0]}"></span>
+        <span><b>${esc(EX[it[0]].name)}</b><span class="sub">${fmtTarget(it)}</span></span>
+        <span class="chev">${I.chev}</span>
+      </button>`).join('')}</div>
+    <div class="sticky-cta"><button class="btn" data-act="start" data-pid="${p.id}" data-day="${nav.day}">Mulai ${esc(d.name)}</button></div>`;
+}
+
+/* ---------- Pustaka gerakan ---------- */
+function viewLibrary() {
+  const ids = Object.keys(EX).filter(id => nav.filter === 'all' || EX[id].cat === nav.filter);
+  return `<h1 class="screen-title">Gerakan</h1>
+    <div class="chips">
+      <button class="chip" aria-pressed="${nav.filter === 'all'}" data-act="filter" data-f="all">Semua</button>
+      ${Object.keys(CATS).map(k => `<button class="chip" aria-pressed="${nav.filter === k}" data-act="filter" data-f="${k}" style="--plate:${CATS[k].color}"><i class="dot"></i>${CATS[k].name}</button>`).join('')}
+    </div>
+    <div class="grid">${ids.map(id => `
+      <button class="card" data-act="ex" data-id="${id}">
+        <div class="stage" data-pict="${id}"></div>
+        <b>${esc(EX[id].name)}</b>
+        <span class="sub">${esc(EX[id].muscles.slice(0, 2).join(', '))}</span>
+      </button>`).join('')}</div>`;
+}
+
+/* ---------- Riwayat ---------- */
+function viewHistory() {
+  if (!S.history.length) return `<h1 class="screen-title">Riwayat</h1>
+    <div class="empty"><p>Belum ada latihan tercatat. Selesaikan satu latihan dan hasilnya muncul di sini.</p>
+    <button class="btn" data-act="home">Pilih program</button></div>`;
+  const now = new Date();
+  const month = S.history.filter(h => { const d = new Date(h.start); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
+  const vol = month.reduce((a, h) => a + h.ex.reduce((b, e) => b + e.sets.reduce((c, s) => c + num(s.kg) * num(s.reps), 0), 0), 0);
+  return `<h1 class="screen-title">Riwayat</h1>
+    <div class="summary">
+      <div class="stat"><small>Latihan bulan ini</small><strong>${month.length}</strong></div>
+      <div class="stat"><small>Total beban bulan ini</small><strong>${vol >= 1000 ? fmtKg(vol / 1000) + ' t' : fmtKg(vol) + ' kg'}</strong></div>
+    </div>
+    ${S.history.map(h => {
+      const d = new Date(h.start), sets = h.ex.reduce((a, e) => a + e.sets.length, 0);
+      const mins = Math.max(1, Math.round((h.end - h.start) / 60000));
+      const p = prog(h.pid), open = nav.open === h.id;
+      return `<article class="log">
+        <button data-act="toggle-log" data-id="${h.id}" aria-expanded="${open}">
+          <span class="date"><small>${DAYS[d.getDay()]}</small><strong>${d.getDate()}</strong><small>${MONTHS[d.getMonth()]}</small></span>
+          <span><h3>${esc(h.day)}</h3><span class="sub">${esc(p ? p.name : '')}<br>${mins} menit, ${sets} set</span></span>
+          <span class="chev">${I.chev}</span>
+        </button>
+        ${open ? `<div class="detail">${h.ex.map(e => `<p><b>${esc(EX[e.id].name)}</b><br>${setsText(e.id, e.sets)}</p>`).join('')}
+          <button class="del" data-act="del-log" data-id="${h.id}">Hapus catatan ini</button></div>` : ''}
+      </article>`;
+    }).join('')}`;
+}
+
+/* ---------- Mode latihan ---------- */
+function startWorkout(pid, di) {
+  const p = prog(pid), d = p.days[di];
+  S.active = pid;
+  S.session = {
+    pid, day: d.name, start: Date.now(), idx: 0, restEnd: null, restLen: S.rest,
+    ex: d.items.map(it => ({ id: it[0], target: fmtTarget(it), low: (String(it[2]).match(/\d+/) || [''])[0], sets: Array.from({ length: it[1] }, () => ({ kg: '', reps: '', done: false })) })),
+  };
+  save(); unlockAudio();
+  go({ view: 'workout', tab: 'home' });
+}
+function viewWorkout() {
+  const ss = S.session, cur = ss.ex[ss.idx], ex = EX[cur.id], prev = lastSetsFor(cur.id);
+  const last = ss.idx === ss.ex.length - 1;
+  return `<div class="wk-top">
+      <button class="close" data-act="quit" aria-label="Keluar dari latihan">${I.close}</button>
+      <span class="count">Gerakan ${ss.idx + 1} dari ${ss.ex.length}</span>
+      <button class="finish" data-act="finish">Selesai</button>
+    </div>
+    <div class="progress" style="--plate:${plate(cur.id)}">${ss.ex.map((e, i) =>
+      `<i class="${i === ss.idx ? 'now' : e.sets.every(s => s.done) ? 'done' : ''}"></i>`).join('')}</div>
+    <div class="wk-stage">
+      <div class="stage" data-pict="${cur.id}"></div>
+      <button class="info" data-act="ex" data-id="${cur.id}">${I.info}Cara melakukan</button>
+    </div>
+    <h1 class="wk-name">${esc(ex.name)}</h1>
+    <div class="wk-target">${esc(cur.target)}</div>
+    ${prev ? `<div class="prev">Terakhir: ${setsText(cur.id, prev)}</div>` : ''}
+    <div class="sets">
+      <div class="set-head"><span>Set</span><span>${ex.bw ? '+ Beban (kg)' : 'Beban (kg)'}</span><span>${ex.timed ? 'Detik' : 'Rep'}</span><span></span></div>
+      ${cur.sets.map((s, i) => {
+        const ph = prev && (prev[i] || prev[prev.length - 1]);
+        return `<div class="set-row ${s.done ? 'is-done' : ''}" data-i="${i}">
+          <span class="set-no">${i + 1}</span>
+          <input inputmode="decimal" enterkeyhint="next" aria-label="Beban set ${i + 1}" data-f="kg" value="${esc(s.kg)}" placeholder="${ph && num(ph.kg) ? esc(ph.kg) : ex.bw ? '0' : '–'}">
+          <input inputmode="numeric" enterkeyhint="done" aria-label="${ex.timed ? 'Detik' : 'Repetisi'} set ${i + 1}" data-f="reps" value="${esc(s.reps)}" placeholder="${esc(ph ? ph.reps : cur.low)}">
+          <button class="tick" data-act="tick" data-i="${i}" aria-label="Tandai set ${i + 1} selesai" aria-pressed="${s.done}">${I.check}</button>
+        </div>`;
+      }).join('')}
+      <button class="add-set" data-act="add-set">Tambah set</button>
+    </div>
+    <div class="wk-nav"><div class="row">
+      <button class="btn ghost small" data-act="prev-ex" ${ss.idx === 0 ? 'disabled style="opacity:.4"' : ''}>Sebelumnya</button>
+      <button class="btn small" data-act="${last ? 'finish' : 'next-ex'}">${last ? 'Selesai latihan' : 'Gerakan berikutnya'}</button>
+    </div></div>`;
+}
+function tick(i) {
+  const ss = S.session, cur = ss.ex[ss.idx], s = cur.sets[i];
+  const row = document.querySelector(`.set-row[data-i="${i}"]`);
+  if (s.done) { s.done = false; save(); render(); return; }
+  const kgIn = row.querySelector('[data-f="kg"]'), rIn = row.querySelector('[data-f="reps"]');
+  if (!s.kg && num(kgIn.placeholder)) s.kg = kgIn.placeholder;
+  if (!s.reps && num(rIn.placeholder)) s.reps = rIn.placeholder;
+  if (!num(s.reps)) { rIn.focus(); toast(EX[cur.id].timed ? 'Isi berapa detik dulu.' : 'Isi jumlah repetisi dulu.'); return; }
+  s.done = true;
+  const allDone = ss.ex.every(e => e.sets.every(x => x.done));
+  if (!allDone) startRest();
+  save(); render();
+  if (cur.sets.every(x => x.done) && ss.idx < ss.ex.length - 1) toast('Gerakan ini selesai. Lanjut ke gerakan berikutnya.');
+  if (allDone) toast('Semua set selesai. Tekan "Selesai latihan" untuk menyimpan.');
+}
+function finishWorkout() {
+  const ss = S.session;
+  const ex = ss.ex.map(e => ({ id: e.id, sets: e.sets.filter(s => s.done).map(s => ({ kg: s.kg, reps: s.reps })) })).filter(e => e.sets.length);
+  if (!ex.length) {
+    if (!confirm('Belum ada set yang dicentang. Keluar tanpa menyimpan?')) return;
+    S.session = null; save(); go({ view: 'home', tab: 'home' }); return;
+  }
+  const todo = ss.ex.reduce((a, e) => a + e.sets.filter(s => !s.done).length, 0);
+  if (todo && !confirm(`Masih ada ${todo} set yang belum dicentang. Simpan latihan sekarang?`)) return;
+  S.history.unshift({ id: 'h' + Date.now(), pid: ss.pid, day: ss.day, start: ss.start, end: Date.now(), ex });
+  S.session = null; save();
+  go({ view: 'history', tab: 'history', open: S.history[0].id });
+  toast('Latihan tersimpan.');
+}
+
+/* ---------- Timer istirahat (berbasis jam, aman saat layar terkunci) ---------- */
+let restTimer = 0, beeped = false;
+function startRest() { S.session.restLen = S.rest; S.session.restEnd = Date.now() + S.rest * 1000; beeped = false; }
+function renderRest() {
+  const box = $('#rest'), ss = S.session;
+  const on = !!(ss && ss.restEnd && nav.view === 'workout');
+  document.body.classList.toggle('resting', on);
+  if (!on) { box.hidden = true; clearInterval(restTimer); restTimer = 0; return; }
+  box.hidden = false;
+  if (!box.firstChild) box.innerHTML = `<div class="in">
+    <div class="top"><span class="label">Istirahat</span><span class="label" id="rest-next"></span></div>
+    <div class="clock" id="rest-clock">0:00</div>
+    <div class="bar"><i id="rest-bar"></i></div>
+    <div class="ctrl"><button data-act="rest-minus">−15 dtk</button><button data-act="rest-plus">+15 dtk</button><button class="skip" data-act="rest-skip">Lewati</button></div>
+  </div>`;
+  updateRest();
+  if (!restTimer) restTimer = setInterval(updateRest, 250);
+}
+function updateRest() {
+  const ss = S.session; if (!ss || !ss.restEnd) return;
+  const left = Math.round((ss.restEnd - Date.now()) / 1000);
+  const box = $('#rest');
+  box.classList.toggle('over', left <= 0);
+  const a = Math.abs(left);
+  $('#rest-clock').textContent = (left < 0 ? '+' : '') + Math.floor(a / 60) + ':' + String(a % 60).padStart(2, '0');
+  $('#rest-bar').style.width = Math.max(0, Math.min(100, left / ss.restLen * 100)) + '%';
+  $('#rest-next').textContent = left <= 0 ? 'Waktunya set berikutnya' : 'Default ' + S.rest + ' dtk';
+  if (left <= 0 && !beeped) { beeped = true; beep(); }
+  if (left < -60) { ss.restEnd = null; save(); renderRest(); }
+}
+
+/* ---------- Bunyi ---------- */
+let actx = null;
+function unlockAudio() {
+  try { if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === 'suspended') actx.resume(); } catch (e) {}
+}
+function beep() {
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+  if (!actx) return;
+  [0, .28, .56].forEach((t, i) => {
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.value = i === 2 ? 1320 : 880; o.type = 'sine';
+    g.gain.setValueAtTime(0.0001, actx.currentTime + t);
+    g.gain.exponentialRampToValueAtTime(0.4, actx.currentTime + t + .02);
+    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + t + .2);
+    o.connect(g).connect(actx.destination);
+    o.start(actx.currentTime + t); o.stop(actx.currentTime + t + .22);
+  });
+}
+
+/* ---------- Lembar detail gerakan ---------- */
+function openSheet(id) {
+  const ex = EX[id], best = bestFor(id), prev = lastSetsFor(id);
+  const sh = $('#sheet');
+  sh.innerHTML = `<div class="sheet-inner">
+    <div class="topbar"><span></span><button class="close" data-act="close-sheet" aria-label="Tutup">${I.close}</button></div>
+    <div class="stage" data-pict="${id}"></div>
+    <h1>${esc(ex.name)}</h1>
+    <div class="facts">
+      <span style="--plate:${plate(id)}"><i class="dot"></i>${CATS[ex.cat].name}</span>
+      <span>${esc(ex.equip)}</span>
+    </div>
+    <p class="sub" style="margin:0">Otot: ${esc(ex.muscles.join(', '))}</p>
+    ${best ? `<div class="stats">
+      <div class="stat"><small>Terbaik</small><strong>${num(best.kg) ? fmtKg(num(best.kg)) + ' kg × ' + esc(best.reps) : esc(best.reps) + (ex.timed ? ' dtk' : ' rep')}</strong></div>
+      <div class="stat"><small>Terakhir</small><strong>${prev.length} set</strong></div>
+    </div>` : ''}
+    <h2 class="section-title">Cara melakukan</h2>
+    <ol class="steps">${ex.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
+    <h2 class="section-title">Hindari</h2>
+    <ul class="avoid">${ex.avoid.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+    ${ex.note ? `<div class="note">${esc(ex.note)}</div>` : ''}
+  </div>`;
+  sh.hidden = false; sh.scrollTop = 0;
+  document.body.style.overflow = 'hidden';
+  mountStages(sh);
+}
+function closeSheet() { const sh = $('#sheet'); sh.hidden = true; sh.innerHTML = ''; document.body.style.overflow = ''; }
+
+/* ---------- Toast ---------- */
+let toastT = 0;
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 2600);
+}
+
+/* ---------- Event ---------- */
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-act]'); if (!b) return;
+  const a = b.dataset.act, ss = S.session;
+  switch (a) {
+    case 'tab': go({ tab: b.dataset.tab, view: ss && b.dataset.tab === 'home' ? 'workout' : b.dataset.tab, open: null }); break;
+    case 'home': go({ view: 'home', tab: 'home' }); break;
+    case 'open-prog': go({ view: 'program', pid: b.dataset.pid, day: +(b.dataset.day || 0) }); break;
+    case 'day': nav.day = +b.dataset.day; render(); break;
+    case 'filter': nav.filter = b.dataset.f; render(); break;
+    case 'ex': openSheet(b.dataset.id); break;
+    case 'close-sheet': closeSheet(); break;
+    case 'start':
+      if (ss && !confirm('Ada latihan yang belum selesai. Mulai baru dan buang yang lama?')) return;
+      startWorkout(b.dataset.pid, +b.dataset.day); break;
+    case 'resume': go({ view: 'workout', tab: 'home' }); break;
+    case 'quit':
+      if (ss.ex.some(x => x.sets.some(s => s.done)) && !confirm('Keluar dan buang latihan ini? Untuk menyimpan, tekan Selesai.')) return;
+      S.session = null; save(); go({ view: 'home', tab: 'home' }); break;
+    case 'tick': tick(+b.dataset.i); break;
+    case 'add-set': ss.ex[ss.idx].sets.push({ kg: '', reps: '', done: false }); save(); render(); break;
+    case 'next-ex': ss.idx = Math.min(ss.ex.length - 1, ss.idx + 1); save(); render(); window.scrollTo(0, 0); break;
+    case 'prev-ex': ss.idx = Math.max(0, ss.idx - 1); save(); render(); window.scrollTo(0, 0); break;
+    case 'finish': finishWorkout(); break;
+    case 'rest-minus': S.rest = Math.max(15, S.rest - 15); ss.restEnd -= 15000; ss.restLen = S.rest; save(); updateRest(); break;
+    case 'rest-plus': S.rest = Math.min(600, S.rest + 15); ss.restEnd += 15000; ss.restLen = S.rest; save(); updateRest(); break;
+    case 'rest-skip': ss.restEnd = null; save(); renderRest(); break;
+    case 'toggle-log': nav.open = nav.open === b.dataset.id ? null : b.dataset.id; render(); break;
+    case 'del-log':
+      if (!confirm('Hapus catatan latihan ini?')) return;
+      S.history = S.history.filter(h => h.id !== b.dataset.id); save(); render(); break;
+  }
+});
+document.addEventListener('input', e => {
+  const inp = e.target.closest('.set-row input'); if (!inp || !S.session) return;
+  const i = +inp.closest('.set-row').dataset.i;
+  S.session.ex[S.session.idx].sets[i][inp.dataset.f] = inp.value.trim();
+  save();
+});
+document.addEventListener('touchstart', unlockAudio, { passive: true, once: true });
+document.addEventListener('click', unlockAudio, { once: true });
+
+/* ---------- Mulai ---------- */
+if (S.session) nav.view = 'workout';
+render();
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+document.getElementById('t-home').innerHTML = I.prog + 'Program';
+document.getElementById('t-lib').innerHTML = I.lib + 'Gerakan';
+document.getElementById('t-hist').innerHTML = I.hist + 'Riwayat';
+</script>
+</body>
+</html>
