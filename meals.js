@@ -11,8 +11,10 @@ const BMI_PROTEIN_CAP = 30;
 const LIMITS = { age: [16, 90], h: [120, 230], w: [35, 250] };
 const SCALE_RANGE = [0.5, 2.5];
 const WEEK_DAYS = 7;
-const MAX_FLEX_CUT = 0.4; // most of a meal's carbs and fats that may be traded for protein
-const MAX_PROTEIN_GROWTH = 0.5; // the protein food may grow by at most half
+const MAX_FLEX_SHIFT = 0.4; // most of a meal's carbs and fats that may be traded against protein
+const MAX_PROTEIN_GROWTH = 0.5; // the protein food may grow by at most half...
+const MAX_PROTEIN_SHRINK = 0.5; // ...or shrink by at most half
+const PROTEIN_TOLERANCE = 0.1; // overshoot up to 10% is left alone
 const BOOST_SLACK = 0.05;
 const DIET_GAP_PENALTY = 0.12; // per step a meal is more restrictive than the user's diet, so an omnivore mostly gets omnivore meals
 const CUISINE_PENALTY = 0.4; // a bit more than one repeat of a meal, so the preferred style dominates but still rotates
@@ -97,26 +99,31 @@ function roundAmount(ing, g) {
   return { g: Math.max(step, Math.round(g / step) * step) };
 }
 
-/* Add protein from the densest protein ingredient and take the calories back from carbs and fats. */
-function boostProtein(items, slotProtein) {
-  const need = slotProtein - sumBy(items, i => gramsMacros(i.ing, i.g).p);
-  if (need < 2) return items;
-  const proteins = items.map((it, idx) => ({ idx, dens: ING[it.ing].k[1] / 100 })).filter((x, _i) => items[x.idx].role === 'P' && x.dens > 0.06);
-  if (!proteins.length) return items;
+const isFlex = it => it.role === 'C' || it.role === 'F';
+
+/* Nudge the densest protein food up or down toward the meal's protein target, and trade the calories
+   with the carbs and fats so the meal stays on its calorie target. */
+function fitProtein(items, slotProtein) {
+  const diff = slotProtein - sumBy(items, i => gramsMacros(i.ing, i.g).p);
+  const proteins = items.map((it, idx) => ({ idx, dens: ING[it.ing].k[1] / 100 })).filter(x => items[x.idx].role === 'P' && x.dens > 0.06);
+  const flexKcal = sumBy(items.filter(isFlex), i => gramsMacros(i.ing, i.g).kcal);
+  if (!proteins.length || flexKcal <= 0) return items;
   const best = proteins.reduce((a, b) => (b.dens > a.dens ? b : a));
   const target = items[best.idx];
-  const flexKcal = sumBy(items.filter(i => i.role === 'C' || i.role === 'F'), i => gramsMacros(i.ing, i.g).kcal);
-  const totalKcal = sumBy(items, i => gramsMacros(i.ing, i.g).kcal);
-  // only add what the carbs and fats can pay back (plus a small slack), so the meal stays on its calorie target
-  const maxAddKcal = flexKcal * MAX_FLEX_CUT + totalKcal * BOOST_SLACK;
   const kcalPerG = ING[target.ing].k[0] / 100;
-  const add = Math.min(need / best.dens, target.g * MAX_PROTEIN_GROWTH, maxAddKcal / kcalPerG);
-  const addedKcal = gramsMacros(target.ing, add).kcal;
-  const cut = flexKcal > 0 ? Math.min(addedKcal / flexKcal, MAX_FLEX_CUT) : 0;
-  return items.map((it, idx) => {
-    if (idx === best.idx) return { ...it, g: it.g + add };
-    return it.role === 'C' || it.role === 'F' ? { ...it, g: it.g * (1 - cut) } : it;
-  });
+  // either way, only move what the carbs and fats can trade back (plus a small slack), so calories stay on target
+  const totalKcal = sumBy(items, i => gramsMacros(i.ing, i.g).kcal);
+  const maxMoveG = (flexKcal * MAX_FLEX_SHIFT + totalKcal * BOOST_SLACK) / kcalPerG;
+  let delta; // grams of the protein food to add (negative removes)
+  let flexScale; // multiplier for the carbs and fats
+  if (diff > 2) {
+    delta = Math.min(diff / best.dens, target.g * MAX_PROTEIN_GROWTH, maxMoveG);
+    flexScale = 1 - Math.min((delta * kcalPerG) / flexKcal, MAX_FLEX_SHIFT);
+  } else if (diff < -slotProtein * PROTEIN_TOLERANCE) {
+    delta = -Math.min(-diff / best.dens, target.g * MAX_PROTEIN_SHRINK, maxMoveG);
+    flexScale = 1 + Math.min((-delta * kcalPerG) / flexKcal, MAX_FLEX_SHIFT);
+  } else return items;
+  return items.map((it, idx) => (idx === best.idx ? { ...it, g: it.g + delta } : isFlex(it) ? { ...it, g: it.g * flexScale } : it));
 }
 
 /* Size one recipe to a meal's calorie and protein target. */
@@ -124,7 +131,7 @@ function scaleRecipe(recipe, slotKcal, slotProtein, noVeg) {
   const comps = noVeg ? recipe.comps.filter(c => c.role !== 'V') : recipe.comps;
   const baseKcal = sumBy(comps, c => gramsMacros(c.ing, c.g).kcal);
   const k = clamp(slotKcal / baseKcal, SCALE_RANGE[0], SCALE_RANGE[1]);
-  const sized = boostProtein(comps.map(c => ({ ...c, g: c.g * k })), slotProtein);
+  const sized = fitProtein(comps.map(c => ({ ...c, g: c.g * k })), slotProtein);
   const items = sized.map(c => {
     const amt = roundAmount(c.ing, ING[c.ing].m ? Math.min(c.g, ING[c.ing].m) : c.g);
     return { ing: c.ing, role: c.role, ...amt, ...gramsMacros(c.ing, amt.g) };

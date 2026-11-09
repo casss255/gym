@@ -183,6 +183,20 @@ test('generatePlan: daily calories land within 10% and protein within 15% of tar
   });
 });
 
+test('generatePlan: protein stays close to the bodyweight-based target, not far above it', () => {
+  const typical = PROFILES.filter(p => p.w < 110);
+  ['omni', 'pesc', 'veg'].forEach(diet => {
+    typical.forEach(p => {
+      const prefs = { ...BASE_PREFS, diet };
+      const t = calcTargets(p);
+      generatePlan(p, prefs, 0).forEach(ids => {
+        const ratio = sizeDay(ids, p, prefs).total.p / t.protein;
+        assert.ok(ratio >= 0.8 && ratio <= 1.35, `${diet} ${JSON.stringify(p)}: protein ${ratio.toFixed(2)}x target`);
+      });
+    });
+  });
+});
+
 test('generatePlan: respects diet and allergies', () => {
   const cases = [
     { ...BASE_PREFS, diet: 'vegan' },
