@@ -101,3 +101,11 @@
 .entry-vals b { font-family: var(--display); font-size: 20px; }
 .entry .sub { grid-column: 1; font-size: 13px; }
 .entry .del { grid-column: 2; justify-self: end; font-size: 14px; }
+
+.prev { background: var(--sunk); border-radius: 14px; padding: 10px 14px; margin-top: 8px; }
+.prev-label { color: var(--muted); font-size: 13px; font-weight: 600; }
+.prev-vals { display: flex; gap: 28px; margin-top: 2px; }
+.prev-vals small { display: block; color: var(--muted); font-size: 12px; font-weight: 600; }
+.prev-vals b { font-family: var(--display); font-size: 26px; line-height: 1.1; }
+.prev-none { margin: 8px 0 0; }
+.delta { display: block; min-height: 18px; margin-top: 3px; font-style: normal; font-size: 13px; font-weight: 600; color: var(--muted); }

@@ -6,8 +6,8 @@ const path = require('node:path');
 
 const code = fs.readFileSync(path.join(__dirname, '..', 'progress.js'), 'utf8');
 const api = new Function(`${code}
-return { todayStr, dateMs, daysBetween, addDays, validateCheckin, upsertCheckin, removeCheckin, weekStatus, summarize, chartModel, CHECKIN_EVERY_DAYS };`)();
-const { todayStr, daysBetween, addDays, validateCheckin, upsertCheckin, removeCheckin, weekStatus, summarize, chartModel } = api;
+return { todayStr, dateMs, daysBetween, addDays, validateCheckin, upsertCheckin, removeCheckin, weekStatus, summarize, chartModel, previousCheckin, CHECKIN_EVERY_DAYS };`)();
+const { todayStr, daysBetween, addDays, validateCheckin, upsertCheckin, removeCheckin, weekStatus, summarize, chartModel, previousCheckin } = api;
 
 const entry = (date, w, waist) => ({ date, w, waist });
 const WEEKS = [entry('2026-09-07', 82, 94), entry('2026-09-14', 81.4, 93), entry('2026-09-21', 80.9, 92.5), entry('2026-11-02', 78.6, 89)];
@@ -140,4 +140,18 @@ test('chartModel: works for the waist series and for many weeks', () => {
   assert.strictEqual(m.points.length, 52);
   m.points.forEach(p => assert.ok(Number.isFinite(p.x) && Number.isFinite(p.y)));
   assert.ok(m.points[0].y < m.points[51].y);
+});
+
+test('previousCheckin: the latest check-in before the chosen date', () => {
+  assert.deepStrictEqual(previousCheckin(WEEKS, '2026-11-09'), WEEKS[3]); // today: the newest one
+  assert.deepStrictEqual(previousCheckin(WEEKS, '2026-09-30'), WEEKS[2]); // a back-dated check-in: the one before that date
+  assert.deepStrictEqual(previousCheckin(WEEKS, '2026-09-15'), WEEKS[1]);
+});
+
+test('previousCheckin: ignores the same date and later ones, and is null when there is nothing earlier', () => {
+  assert.deepStrictEqual(previousCheckin(WEEKS, '2026-11-02'), WEEKS[2], 'the same date is being replaced, so it is not "previous"');
+  assert.strictEqual(previousCheckin(WEEKS, '2026-09-07'), null, 'nothing before the very first check-in');
+  assert.strictEqual(previousCheckin(WEEKS, '2026-01-01'), null);
+  assert.strictEqual(previousCheckin([], '2026-11-09'), null);
+  assert.strictEqual(previousCheckin(WEEKS, ''), null, 'an empty date while typing must not crash');
 });

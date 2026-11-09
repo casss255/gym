@@ -29,14 +29,36 @@ function statusCard(st) {
   return `<div class="status ok"><b>${esc(t('p_next', { date: fmtDate(st.nextDate, false) }))}</b><span class="sub">${t('p_ok_sub')}</span></div>`;
 }
 
-function checkinForm(entries) {
-  const d = progressDraft(), last = entries[entries.length - 1];
+/* The box showing what was recorded last time, for the date currently chosen in the form. */
+function previousBox(prev) {
+  if (!prev) return `<p class="fine prev-none">${t('p_prev_none')}</p>`;
+  const item = (title, value, unit) => `<span><small>${t(title)}</small><b>${fmt1(value)}</b> ${unit}</span>`;
+  return `<div class="prev"><span class="prev-label">${t('p_prev')} · ${fmtDate(prev.date, true)}</span>
+    <div class="prev-vals">${item('p_chart_weight', prev.w, 'kg')}${item('p_chart_waist', prev.waist, 'cm')}</div></div>`;
+}
+
+/* What to type next: last time's value, or the Meals plan weight, or a typical number. */
+function measureHint(m, prev) {
   const meals = S.meals && S.meals.profile;
-  const field = m => {
-    const hint = last ? last[m.key] : m.key === 'w' && meals ? meals.w : m.hint;
-    return `<label class="field"><span>${t(m.input)}</span><input inputmode="decimal" data-pf="${m.key}" value="${esc(d[m.key])}" placeholder="${esc(hint)}" autocomplete="off"></label>`;
-  };
+  return prev ? prev[m.key] : m.key === 'w' && meals ? meals.w : m.hint;
+}
+
+/* Live change against the previous check-in while typing, only once the number is plausible. */
+function deltaText(prev, d, m) {
+  const v = num(d[m.key]);
+  if (!prev || !(v >= CHECKIN_LIMITS[m.key][0])) return '';
+  const diff = Math.round((v - prev[m.key]) * 10) / 10;
+  return diff === 0 ? t('p_same_prev') : `${signed(diff)} ${m.unit} ${t('p_vs_last')}`;
+}
+
+function checkinForm(entries) {
+  const d = progressDraft(), prev = previousCheckin(entries, d.date);
+  const meals = S.meals && S.meals.profile;
+  const field = m => `<label class="field"><span>${t(m.input)}</span>
+    <input inputmode="decimal" data-pf="${m.key}" value="${esc(d[m.key])}" placeholder="${esc(measureHint(m, prev))}" autocomplete="off">
+    <em class="delta" data-delta="${m.key}" aria-live="polite">${esc(deltaText(prev, d, m))}</em></label>`;
   return `<section class="checkin"><h2 class="section-title">${t('p_form')}</h2>
+    <div id="prev-slot">${previousBox(prev)}</div>
     <label class="field"><span>${t('p_date')}</span><input type="date" data-pf="date" value="${esc(d.date)}" max="${todayStr()}"></label>
     ${MEASURES.map(field).join('')}
     <p class="fine">${t('p_tip')}</p>
@@ -113,8 +135,21 @@ function saveCheckin() {
   toast(t(replaced ? 'p_updated' : 'p_saved'));
 }
 
+/* Update the Previous box, hints and live changes in place. A full re-render would close the date picker mid-wheel. */
+function refreshPreview() {
+  const d = progressDraft(), prev = previousCheckin(checkins(), d.date);
+  const slot = document.querySelector('#prev-slot');
+  if (slot) slot.innerHTML = previousBox(prev);
+  MEASURES.forEach(m => {
+    const inp = document.querySelector(`[data-pf="${m.key}"]`), delta = document.querySelector(`[data-delta="${m.key}"]`);
+    if (inp) inp.placeholder = measureHint(m, prev);
+    if (delta) delta.textContent = deltaText(prev, d, m);
+  });
+}
+
 function progressInput(inp) {
   progressDraft()[inp.dataset.pf] = inp.type === 'checkbox' ? inp.checked : inp.value.trim();
+  refreshPreview();
 }
 
 function progressAction(a, b) {

@@ -11,7 +11,7 @@ Object.assign(STR.en, {
   p_chart_weight: 'Weight', p_chart_waist: 'Waist', p_since: 'since the start', p_start: 'Start', p_now: 'Now',
   p_need2: 'Add another check-in next week to see your trend.', p_nochange: 'No change since the start',
   p_chart_aria: '{name}: {a} {unit} on {d1} to {b} {unit} on {d2}', p_chart_aria_one: '{name}: {a} {unit} on {d1}',
-  p_history: 'Check-ins', p_del: 'Delete', p_cdel: 'Delete this check-in?', p_vs_prev: 'since the previous check-in',
+  p_history: 'Check-ins', p_del: 'Delete', p_cdel: 'Delete this check-in?', p_vs_prev: 'since the previous check-in', p_prev: 'Previous check-in', p_prev_none: 'No previous check-in yet. This one will be your starting point.', p_vs_last: 'vs previous', p_same_prev: 'Same as previous',
 });
 
 Object.assign(STR.id, {
@@ -26,5 +26,5 @@ Object.assign(STR.id, {
   p_chart_weight: 'Berat badan', p_chart_waist: 'Lingkar pinggang', p_since: 'sejak awal', p_start: 'Awal', p_now: 'Sekarang',
   p_need2: 'Tambah check-in minggu depan untuk melihat trennya.', p_nochange: 'Tidak berubah sejak awal',
   p_chart_aria: '{name}: {a} {unit} pada {d1} menjadi {b} {unit} pada {d2}', p_chart_aria_one: '{name}: {a} {unit} pada {d1}',
-  p_history: 'Riwayat check-in', p_del: 'Hapus', p_cdel: 'Hapus check-in ini?', p_vs_prev: 'sejak check-in sebelumnya',
+  p_history: 'Riwayat check-in', p_del: 'Hapus', p_cdel: 'Hapus check-in ini?', p_vs_prev: 'sejak check-in sebelumnya', p_prev: 'Check-in sebelumnya', p_prev_none: 'Belum ada check-in sebelumnya. Ini akan jadi titik awalmu.', p_vs_last: 'dibanding sebelumnya', p_same_prev: 'Sama seperti sebelumnya',
 });

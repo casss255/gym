@@ -43,6 +43,9 @@ function weekStatus(entries, today) {
   return { due: daysSince >= CHECKIN_EVERY_DAYS, daysSince, nextDate: addDays(last.date, CHECKIN_EVERY_DAYS), count: entries.length };
 }
 
+/* The check-in a new one on `date` would follow: the latest one strictly before that date, or null. */
+const previousCheckin = (entries, date) => [...entries].reverse().find(e => e.date < date) || null;
+
 /* Start, latest and change since the first check-in for one measure ('w' or 'waist'). */
 function summarize(entries, key) {
   if (!entries.length) return null;

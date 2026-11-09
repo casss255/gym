@@ -1,5 +1,5 @@
 // Bump this version every time index.html (or any app file) changes so phones fetch the new version.
-const VERSION = 'gym-v9';
+const VERSION = 'gym-v10';
 const SHELL = [
   './', './index.html', './features.css', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
   './i18n.js', './i18n-ex.js', './meals-text.js', './meals-data.js', './meals.js', './meals-view.js', './cardio.js',
