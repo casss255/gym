@@ -1,0 +1,65 @@
+/* ---------- Language switch ---------- */
+.langbar { display: flex; justify-content: flex-end; gap: 6px; margin: 0 0 2px; }
+.langbar button { min-height: 40px; min-width: 48px; padding: 0 12px; border-radius: 999px; border: 2px solid var(--line); font-weight: 700; font-size: 14px; }
+.langbar button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--on-accent); }
+
+/* ---------- Meals ---------- */
+.lead { margin: -8px 0 20px; max-width: 56ch; color: var(--muted); }
+.fine { color: var(--muted); font-size: 13px; line-height: 1.4; margin: 14px 0 0; max-width: 62ch; }
+.choice { display: block; width: 100%; text-align: left; background: var(--surface); border-radius: 18px; padding: 16px 18px; margin-bottom: 10px; border-left: 7px solid var(--green); }
+.choice + .choice { border-left-color: var(--blue); }
+.choice b { display: block; font-family: var(--display); font-size: 26px; font-weight: 700; line-height: 1.1; }
+.choice .sub { display: block; margin-top: 4px; }
+
+.q-title { font-size: 40px; margin: 14px 0 6px; }
+.q-sub { margin: 0 0 14px; }
+.opts { display: grid; gap: 8px; margin: 14px 0 20px; }
+.opt { text-align: left; width: 100%; min-height: 56px; padding: 10px 16px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); }
+.opt b { display: block; font-weight: 600; font-size: 17px; line-height: 1.25; }
+.opt .sub { display: block; font-size: 14px; }
+.opt[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.field { display: block; margin: 14px 0 0; }
+.field > span { display: block; color: var(--muted); font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.field input { width: 100%; min-height: 52px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); color: var(--ink); font: 600 20px var(--body); padding: 0 14px; -webkit-appearance: none; appearance: none; }
+.next { margin-top: 8px; }
+
+.plan-basis { margin: -8px 0 14px; }
+.targets { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.targets .stat strong { font-size: 30px; }
+.targets .stat em { font-style: normal; font-size: 16px; color: var(--muted); font-weight: 600; }
+.days { margin: 18px 0 14px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.days::-webkit-scrollbar { display: none; }
+.days .chip { flex: none; min-width: 52px; justify-content: center; }
+
+.meal { background: var(--surface); border-radius: 18px; padding: 14px 16px; margin-bottom: 10px; }
+.meal-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.slot { color: var(--muted); font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.nums { font-size: 15px; color: var(--muted); }
+.nums b { color: var(--ink); font-family: var(--display); font-size: 22px; }
+.meal h3 { font-size: 24px; margin: 4px 0 8px; }
+.ings { list-style: none; }
+.ings li { padding: 4px 0; border-top: 1px solid var(--line); font-size: 15px; }
+.ings li:first-child { border-top: 0; }
+.ings b { font-weight: 700; margin-right: 4px; }
+.meal-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+.meal-foot .sub { font-size: 13px; }
+.tags { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+.meal.empty .sub { margin: 6px 0 12px; }
+
+.totals .section-title { margin-top: 24px; }
+.tot { margin-bottom: 12px; }
+.tot-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-weight: 600; }
+.tot-top b { font-family: var(--display); font-size: 22px; }
+.tot-top small { font-family: var(--body); font-size: 13px; color: var(--muted); font-weight: 500; }
+.tbar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 4px; }
+.tbar i { display: block; height: 100%; background: var(--c, var(--ink)); border-radius: 4px; }
+.plan-actions { display: flex; flex-wrap: wrap; gap: 4px 18px; margin-top: 14px; }
+
+.picks { display: grid; gap: 8px; margin-top: 14px; }
+.pick { text-align: left; width: 100%; background: var(--surface); border-radius: 14px; padding: 12px 14px; border: 2px solid transparent; }
+.pick[aria-pressed="true"] { border-color: var(--ink); }
+.pick b { display: block; font-weight: 600; font-size: 17px; line-height: 1.25; }
+.pick .sub, .pick .tags { display: block; margin: 2px 0 0; }
+
+@media (prefers-reduced-motion: reduce) { .choice:active, .opt:active { transform: none; } }

@@ -1,8 +1,8 @@
 {
   "name": "Gym Program",
   "short_name": "Gym",
-  "description": "Program latihan gym dengan animasi gerakan, pencatat set, dan timer istirahat.",
-  "lang": "id",
+  "description": "Gym programs with animated exercise demos, set logging, a rest timer and a daily meal plan.",
+  "lang": "en",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

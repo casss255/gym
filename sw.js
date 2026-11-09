@@ -1,6 +1,9 @@
-// Ganti angka versi ini setiap kali index.html diubah agar HP mengambil versi baru.
-const VERSION = 'gym-v1';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
+// Bump this version every time index.html (or any app file) changes so phones fetch the new version.
+const VERSION = 'gym-v2';
+const SHELL = [
+  './', './index.html', './features.css', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png',
+  './i18n.js', './i18n-ex.js', './meals-text.js', './meals-data.js', './meals.js', './meals-view.js',
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -12,14 +15,14 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  // Halaman: coba internet dulu (supaya update langsung masuk), kalau offline pakai cache.
+  // Pages: try the network first (so updates arrive immediately), fall back to the cache when offline.
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then(res => {
       const copy = res.clone(); caches.open(VERSION).then(c => c.put('./index.html', copy)); return res;
     }).catch(() => caches.match('./index.html')));
     return;
   }
-  // Font Google dan file lain: pakai cache dulu, simpan saat pertama kali diambil.
+  // Google Fonts and other files: cache first, stored the first time they are fetched.
   if (url.origin === location.origin || url.host.endsWith('googleapis.com') || url.host.endsWith('gstatic.com')) {
     e.respondWith(caches.match(req).then(hit => hit || fetch(req).then(res => {
       if (res.ok || res.type === 'opaque') { const copy = res.clone(); caches.open(VERSION).then(c => c.put(req, copy)); }

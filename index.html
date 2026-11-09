@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gym Program</title>
-<meta name="description" content="Program latihan gym dengan animasi cara gerakan, pencatat set, dan timer istirahat.">
+<meta name="description" content="Gym programs with animated exercise demos, set logging, a rest timer and a daily meal plan. English and Bahasa Indonesia.">
 <meta name="theme-color" content="#E8EBEE" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#101418" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -297,7 +297,7 @@ body.resting #view { padding-bottom: calc(330px + env(safe-area-inset-bottom, 0p
   background: var(--surface); border-top: 1px solid var(--line);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); }
+.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
 .tabs button { min-height: 62px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 600; color: var(--muted); }
 .tabs svg { width: 26px; height: 26px; }
 .tabs button[aria-current="page"] { color: var(--ink); }
@@ -315,17 +315,25 @@ body.in-workout .tabs { display: none; }
 }
 
 </style>
+<link rel="stylesheet" href="./features.css">
 </head>
 <body>
 <main id="view"></main>
-<nav class="tabs" aria-label="Menu utama"><div class="in">
+<nav class="tabs" aria-label="Main menu"><div class="in">
   <button data-act="tab" data-tab="home" id="t-home"></button>
   <button data-act="tab" data-tab="library" id="t-lib"></button>
+  <button data-act="tab" data-tab="meals" id="t-meals"></button>
   <button data-act="tab" data-tab="history" id="t-hist"></button>
 </div></nav>
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" hidden></div>
 <div class="rest" id="rest" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
+<script src="./i18n.js"></script>
+<script src="./i18n-ex.js"></script>
+<script src="./meals-text.js"></script>
+<script src="./meals-data.js"></script>
+<script src="./meals.js"></script>
+<script src="./meals-view.js"></script>
 <script>
 /* ---------- Pictogram engine: animated stick-figure exercises drawn in SVG ---------- */
 const GROUND = 186;
@@ -857,42 +865,43 @@ const PROGRAMS = [
     id: 'fullbody', name: 'Full Body Pemula', freq: 3, level: 'Pemula',
     desc: 'Tiga kali seminggu, gantian Hari A dan B. Cocok untuk 3 bulan pertama di gym.',
     days: [
-      { name: 'Hari A', items: [['squat', 3, '8–10'], ['bench', 3, '8–10'], ['row', 3, '8–10'], ['plank', 3, '30–45', 'detik']] },
-      { name: 'Hari B', items: [['rdl', 3, '8–10'], ['ohp', 3, '8–10'], ['pullup', 3, 'maks'], ['lunge', 3, '10', 'rep/kaki'], ['crunch', 3, '15']] },
+      { name: 'Hari A', items: [['squat', 3, '8–10'], ['bench', 3, '8–10'], ['row', 3, '8–10'], ['plank', 3, '30–45', 'sec']] },
+      { name: 'Hari B', items: [['rdl', 3, '8–10'], ['ohp', 3, '8–10'], ['pullup', 3, 'max'], ['lunge', 3, '10', 'repLeg'], ['crunch', 3, '15']] },
     ],
   },
   {
     id: 'upperlower', name: 'Upper / Lower', freq: 4, level: 'Menengah',
     desc: 'Empat kali seminggu: badan atas, badan bawah, istirahat, ulangi.',
     days: [
-      { name: 'Upper', items: [['bench', 4, '6–8'], ['row', 4, '8–10'], ['ohp', 3, '8–10'], ['pullup', 3, 'maks'], ['curl', 3, '10–12'], ['triceps', 3, '10–12']] },
-      { name: 'Lower', items: [['squat', 4, '6–8'], ['rdl', 3, '8–10'], ['lunge', 3, '10', 'rep/kaki'], ['bridge', 3, '12'], ['calf', 4, '15'], ['plank', 3, '45', 'detik']] },
+      { name: 'Upper', items: [['bench', 4, '6–8'], ['row', 4, '8–10'], ['ohp', 3, '8–10'], ['pullup', 3, 'max'], ['curl', 3, '10–12'], ['triceps', 3, '10–12']] },
+      { name: 'Lower', items: [['squat', 4, '6–8'], ['rdl', 3, '8–10'], ['lunge', 3, '10', 'repLeg'], ['bridge', 3, '12'], ['calf', 4, '15'], ['plank', 3, '45', 'sec']] },
     ],
   },
   {
     id: 'ppl', name: 'Push Pull Legs', freq: 6, level: 'Menengah',
     desc: 'Dorong, tarik, kaki. Jalankan 3 hari seminggu, atau 6 hari kalau sudah terbiasa.',
     days: [
-      { name: 'Push', items: [['bench', 4, '6–8'], ['ohp', 3, '8–10'], ['pushup', 3, 'maks'], ['latraise', 3, '12–15'], ['triceps', 3, '10–12']] },
-      { name: 'Pull', items: [['deadlift', 3, '5'], ['pullup', 3, 'maks'], ['row', 3, '8–10'], ['curl', 3, '10–12']] },
-      { name: 'Legs', items: [['squat', 4, '6–8'], ['rdl', 3, '8–10'], ['lunge', 3, '10', 'rep/kaki'], ['calf', 4, '15'], ['crunch', 3, '15']] },
+      { name: 'Push', items: [['bench', 4, '6–8'], ['ohp', 3, '8–10'], ['pushup', 3, 'max'], ['latraise', 3, '12–15'], ['triceps', 3, '10–12']] },
+      { name: 'Pull', items: [['deadlift', 3, '5'], ['pullup', 3, 'max'], ['row', 3, '8–10'], ['curl', 3, '10–12']] },
+      { name: 'Legs', items: [['squat', 4, '6–8'], ['rdl', 3, '8–10'], ['lunge', 3, '10', 'repLeg'], ['calf', 4, '15'], ['crunch', 3, '15']] },
     ],
   },
   {
     id: 'homeworkout', name: 'Tanpa Alat', freq: 3, level: 'Semua level',
     desc: 'Untuk di rumah atau saat bepergian. Tidak perlu alat apa pun.',
     days: [
-      { name: 'Sirkuit', items: [['airsquat', 3, '15'], ['pushup', 3, 'maks'], ['lunge', 3, '10', 'rep/kaki'], ['bridge', 3, '15'], ['plank', 3, '30–45', 'detik'], ['crunch', 3, '15']] },
+      { name: 'Sirkuit', items: [['airsquat', 3, '15'], ['pushup', 3, 'max'], ['lunge', 3, '10', 'repLeg'], ['bridge', 3, '15'], ['plank', 3, '30–45', 'sec'], ['crunch', 3, '15']] },
     ],
   },
 ];
 
 /* ---------- Penyimpanan ---------- */
 const KEY = 'gymapp.v1';
-const S = Object.assign({ active: null, rest: 90, history: [], session: null }, (() => {
+const S = Object.assign({ active: null, rest: 90, history: [], session: null, lang: detectLang(), meals: null }, (() => {
   try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
 })());
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+setLang(S.lang);
 
 /* ---------- Ikon ---------- */
 const I = {
@@ -903,6 +912,7 @@ const I = {
   prog: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 13h20"/><rect x="5.5" y="6" width="3.5" height="14" rx="1.2" fill="currentColor" stroke="none"/><rect x="17" y="6" width="3.5" height="14" rx="1.2" fill="currentColor" stroke="none"/><path d="M2.5 10v6M23.5 10v6"/></svg>',
   lib: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4.5" r="2.4" fill="currentColor" stroke="none"/><path d="M13 8.5v8M13 10.5l-6 3M13 10.5l6-3M13 16.5l-4 7M13 16.5l4 7"/></svg>',
   hist: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="9.5"/><path d="M13 7.5V13l3.8 2.4"/></svg>',
+  meal: '<svg viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="13" r="5.5"/><path d="M3.5 4v6.5M6.5 4v6.5M3.5 8.5h3M5 10.5V22M22.5 4c-2.2 1.6-2.8 4-2.8 7h2.8V22"/></svg>',
   info: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.1"/></svg>',
 };
 
@@ -911,12 +921,10 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const prog = id => PROGRAMS.find(p => p.id === id);
 const plate = id => CATS[EX[id].cat].color;
-const unitOf = it => it[3] || (EX[it[0]].timed ? 'detik' : 'rep');
-const fmtTarget = it => `${it[1]} set × ${it[2]} ${unitOf(it)}`;
+const unitOf = it => it[3] || (EX[it[0]].timed ? 'sec' : 'rep');
+const fmtTarget = it => t('target', { sets: it[1], reps: it[2] === 'max' ? t('max') : it[2], unit: t('u_' + unitOf(it)) });
 const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isNaN(n) ? 0 : n; };
-const fmtKg = n => (Math.round(n * 10) / 10).toLocaleString('id-ID');
-const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const fmtKg = n => (Math.round(n * 10) / 10).toLocaleString(locale());
 
 function nextDayIdx(pid) {
   const p = prog(pid);
@@ -942,7 +950,7 @@ function bestFor(id) {
 }
 function setsText(id, sets) {
   const timed = EX[id].timed;
-  return sets.map(s => num(s.kg) ? `${fmtKg(num(s.kg))} kg × ${s.reps}` : `${s.reps}${timed ? ' dtk' : ' rep'}`).join(', ');
+  return sets.map(s => num(s.kg) ? `${fmtKg(num(s.kg))} kg × ${s.reps}` : `${s.reps} ${t(timed ? 'secShort' : 'repShort')}`).join(', ');
 }
 function estMinutes(day) { return Math.round(day.items.reduce((a, it) => a + it[1], 0) * 2.4 / 5) * 5; }
 
@@ -955,11 +963,16 @@ function render() {
   const inWorkout = nav.view === 'workout' && S.session;
   document.body.classList.toggle('in-workout', !!inWorkout);
   document.body.classList.toggle('has-cta', nav.view === 'program');
-  if (inWorkout) v.innerHTML = viewWorkout();
-  else if (nav.view === 'program') v.innerHTML = viewProgram();
-  else if (nav.view === 'library') v.innerHTML = viewLibrary();
-  else if (nav.view === 'history') v.innerHTML = viewHistory();
-  else v.innerHTML = viewHome();
+  let html;
+  if (inWorkout) html = viewWorkout();
+  else if (nav.view === 'program') html = viewProgram();
+  else if (nav.view === 'library') html = viewLibrary();
+  else if (nav.view === 'history') html = viewHistory();
+  else if (nav.view === 'meals') html = viewMeals();
+  else html = viewHome();
+  const showLang = !inWorkout && nav.view !== 'program' && !(nav.view === 'meals' && nav.m);
+  v.innerHTML = (showLang ? langBar() : '') + html;
+  renderTabs();
   document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === nav.tab ? 'page' : 'false'));
   mountStages(v);
   renderRest();
@@ -979,34 +992,34 @@ function viewHome() {
     const p = prog(S.session.pid);
     const cur = S.session.ex[S.session.idx];
     hero = `<section class="hero">
-      <div class="kicker">Latihan sedang berjalan</div>
-      <h2>${esc(S.session.day)}</h2>
-      <div class="meta">${esc(p.name)}. Gerakan ${S.session.idx + 1} dari ${S.session.ex.length}: ${esc(EX[cur.id].name)}</div>
+      <div class="kicker">${t('inProgress')}</div>
+      <h2>${esc(dayLabel(S.session.day))}</h2>
+      <div class="meta">${esc(t('inProgressMeta', { prog: progName(p), n: S.session.idx + 1, total: S.session.ex.length, name: EX[cur.id].name }))}</div>
       <div class="stage" data-pict="${cur.id}"></div>
-      <button class="btn" data-act="resume">Lanjutkan latihan</button>
+      <button class="btn" data-act="resume">${t('resume')}</button>
     </section>`;
   } else if (S.active) {
     const p = prog(S.active), di = nextDayIdx(S.active), d = p.days[di];
     hero = `<section class="hero">
-      <div class="kicker">Latihan berikutnya</div>
-      <h2>${esc(d.name)}</h2>
-      <div class="meta">${esc(p.name)}. ${d.items.length} gerakan, sekitar ${estMinutes(d)} menit</div>
+      <div class="kicker">${t('nextWorkout')}</div>
+      <h2>${esc(dayLabel(d.name))}</h2>
+      <div class="meta">${esc(t('nextMeta', { prog: progName(p), n: d.items.length, min: estMinutes(d) }))}</div>
       <div class="stage" data-pict="${d.items[0][0]}"></div>
       <div class="strip">${d.items.slice(1).map(it => `<div class="thumb" data-pict="${it[0]}" data-still></div>`).join('')}</div>
-      <button class="btn" data-act="start" data-pid="${p.id}" data-day="${di}">Mulai ${esc(d.name)}</button>
-      <button class="link" data-act="open-prog" data-pid="${p.id}" data-day="${di}">Lihat isi program</button>
+      <button class="btn" data-act="start" data-pid="${p.id}" data-day="${di}">${esc(t('startDay', { day: dayLabel(d.name) }))}</button>
+      <button class="link" data-act="open-prog" data-pid="${p.id}" data-day="${di}">${t('viewProgram')}</button>
     </section>`;
   } else {
-    hero = `<h1 class="screen-title">Pilih program</h1>
-      <p class="sub" style="margin:-8px 0 8px">Belum pernah ke gym? Mulai dari Full Body Pemula.</p>`;
+    hero = `<h1 class="screen-title">${t('pickProgram')}</h1>
+      <p class="sub" style="margin:-8px 0 8px">${t('newbieHint')}</p>`;
   }
   return `${hero}
-    ${S.active || S.session ? '<h2 class="section-title">Semua program</h2>' : ''}
+    ${S.active || S.session ? `<h2 class="section-title">${t('allPrograms')}</h2>` : ''}
     <div>${PROGRAMS.map(p => `
       <button class="prog" data-act="open-prog" data-pid="${p.id}">
         <span class="disc" aria-hidden="true">${p.freq}×</span>
-        <span><h3>${esc(p.name)}</h3>
-        <span class="sub">${p.freq}× seminggu, ${esc(p.level)}${S.active === p.id ? ' <span class="active-tag">Program kamu</span>' : ''}</span></span>
+        <span><h3>${esc(progName(p))}</h3>
+        <span class="sub">${esc(t('perWeek', { n: p.freq, level: progLevel(p) }))}${S.active === p.id ? ` <span class="active-tag">${t('yourProgram')}</span>` : ''}</span></span>
         <span class="chev">${I.chev}</span>
       </button>`).join('')}</div>`;
 }
@@ -1014,51 +1027,51 @@ function viewHome() {
 /* ---------- Detail program ---------- */
 function viewProgram() {
   const p = prog(nav.pid), d = p.days[nav.day];
-  return `<div class="topbar"><button class="back" data-act="home">${I.back}Program</button></div>
+  return `<div class="topbar"><button class="back" data-act="home">${I.back}${t('programBack')}</button></div>
     <header class="prog-head">
-      <h1>${esc(p.name)}</h1>
-      <div class="sub">${p.freq}× seminggu, ${esc(p.level)}</div>
-      <p>${esc(p.desc)}</p>
+      <h1>${esc(progName(p))}</h1>
+      <div class="sub">${esc(t('perWeek', { n: p.freq, level: progLevel(p) }))}</div>
+      <p>${esc(progDesc(p))}</p>
     </header>
     ${p.days.length > 1 ? `<div class="seg" role="tablist">${p.days.map((x, i) =>
-      `<button role="tab" aria-selected="${i === nav.day}" data-act="day" data-day="${i}">${esc(x.name)}</button>`).join('')}</div>` : '<div style="height:18px"></div>'}
+      `<button role="tab" aria-selected="${i === nav.day}" data-act="day" data-day="${i}">${esc(dayLabel(x.name))}</button>`).join('')}</div>` : '<div style="height:18px"></div>'}
     <div>${d.items.map(it => `
       <button class="ex-row" data-act="ex" data-id="${it[0]}">
         <span class="thumb" data-pict="${it[0]}"></span>
         <span><b>${esc(EX[it[0]].name)}</b><span class="sub">${fmtTarget(it)}</span></span>
         <span class="chev">${I.chev}</span>
       </button>`).join('')}</div>
-    <div class="sticky-cta"><button class="btn" data-act="start" data-pid="${p.id}" data-day="${nav.day}">Mulai ${esc(d.name)}</button></div>`;
+    <div class="sticky-cta"><button class="btn" data-act="start" data-pid="${p.id}" data-day="${nav.day}">${esc(t('startDay', { day: dayLabel(d.name) }))}</button></div>`;
 }
 
 /* ---------- Pustaka gerakan ---------- */
 function viewLibrary() {
   const ids = Object.keys(EX).filter(id => nav.filter === 'all' || EX[id].cat === nav.filter);
-  return `<h1 class="screen-title">Gerakan</h1>
+  return `<h1 class="screen-title">${t('exercises')}</h1>
     <div class="chips">
-      <button class="chip" aria-pressed="${nav.filter === 'all'}" data-act="filter" data-f="all">Semua</button>
-      ${Object.keys(CATS).map(k => `<button class="chip" aria-pressed="${nav.filter === k}" data-act="filter" data-f="${k}" style="--plate:${CATS[k].color}"><i class="dot"></i>${CATS[k].name}</button>`).join('')}
+      <button class="chip" aria-pressed="${nav.filter === 'all'}" data-act="filter" data-f="all">${t('all')}</button>
+      ${Object.keys(CATS).map(k => `<button class="chip" aria-pressed="${nav.filter === k}" data-act="filter" data-f="${k}" style="--plate:${CATS[k].color}"><i class="dot"></i>${catName(k)}</button>`).join('')}
     </div>
     <div class="grid">${ids.map(id => `
       <button class="card" data-act="ex" data-id="${id}">
         <div class="stage" data-pict="${id}"></div>
         <b>${esc(EX[id].name)}</b>
-        <span class="sub">${esc(EX[id].muscles.slice(0, 2).join(', '))}</span>
+        <span class="sub">${esc(exInfo(id).muscles.slice(0, 2).join(', '))}</span>
       </button>`).join('')}</div>`;
 }
 
 /* ---------- Riwayat ---------- */
 function viewHistory() {
-  if (!S.history.length) return `<h1 class="screen-title">Riwayat</h1>
-    <div class="empty"><p>Belum ada latihan tercatat. Selesaikan satu latihan dan hasilnya muncul di sini.</p>
-    <button class="btn" data-act="home">Pilih program</button></div>`;
+  if (!S.history.length) return `<h1 class="screen-title">${t('history')}</h1>
+    <div class="empty"><p>${t('emptyHistory')}</p>
+    <button class="btn" data-act="home">${t('pickProgram')}</button></div>`;
   const now = new Date();
   const month = S.history.filter(h => { const d = new Date(h.start); return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear(); });
   const vol = month.reduce((a, h) => a + h.ex.reduce((b, e) => b + e.sets.reduce((c, s) => c + num(s.kg) * num(s.reps), 0), 0), 0);
-  return `<h1 class="screen-title">Riwayat</h1>
+  return `<h1 class="screen-title">${t('history')}</h1>
     <div class="summary">
-      <div class="stat"><small>Latihan bulan ini</small><strong>${month.length}</strong></div>
-      <div class="stat"><small>Total beban bulan ini</small><strong>${vol >= 1000 ? fmtKg(vol / 1000) + ' t' : fmtKg(vol) + ' kg'}</strong></div>
+      <div class="stat"><small>${t('monthWorkouts')}</small><strong>${month.length}</strong></div>
+      <div class="stat"><small>${t('monthVolume')}</small><strong>${vol >= 1000 ? fmtKg(vol / 1000) + ' t' : fmtKg(vol) + ' kg'}</strong></div>
     </div>
     ${S.history.map(h => {
       const d = new Date(h.start), sets = h.ex.reduce((a, e) => a + e.sets.length, 0);
@@ -1066,12 +1079,12 @@ function viewHistory() {
       const p = prog(h.pid), open = nav.open === h.id;
       return `<article class="log">
         <button data-act="toggle-log" data-id="${h.id}" aria-expanded="${open}">
-          <span class="date"><small>${DAYS[d.getDay()]}</small><strong>${d.getDate()}</strong><small>${MONTHS[d.getMonth()]}</small></span>
-          <span><h3>${esc(h.day)}</h3><span class="sub">${esc(p ? p.name : '')}<br>${mins} menit, ${sets} set</span></span>
+          <span class="date"><small>${dayShort(d.getDay())}</small><strong>${d.getDate()}</strong><small>${monthShort(d.getMonth())}</small></span>
+          <span><h3>${esc(dayLabel(h.day))}</h3><span class="sub">${esc(p ? progName(p) : '')}<br>${t('minSets', { min: mins, sets })}</span></span>
           <span class="chev">${I.chev}</span>
         </button>
         ${open ? `<div class="detail">${h.ex.map(e => `<p><b>${esc(EX[e.id].name)}</b><br>${setsText(e.id, e.sets)}</p>`).join('')}
-          <button class="del" data-act="del-log" data-id="${h.id}">Hapus catatan ini</button></div>` : ''}
+          <button class="del" data-act="del-log" data-id="${h.id}">${t('deleteLog')}</button></div>` : ''}
       </article>`;
     }).join('')}`;
 }
@@ -1082,7 +1095,7 @@ function startWorkout(pid, di) {
   S.active = pid;
   S.session = {
     pid, day: d.name, start: Date.now(), idx: 0, restEnd: null, restLen: S.rest,
-    ex: d.items.map(it => ({ id: it[0], target: fmtTarget(it), low: (String(it[2]).match(/\d+/) || [''])[0], sets: Array.from({ length: it[1] }, () => ({ kg: '', reps: '', done: false })) })),
+    ex: d.items.map(it => ({ id: it[0], item: it, low: (String(it[2]).match(/\d+/) || [''])[0], sets: Array.from({ length: it[1] }, () => ({ kg: '', reps: '', done: false })) })),
   };
   save(); unlockAudio();
   go({ view: 'workout', tab: 'home' });
@@ -1091,35 +1104,35 @@ function viewWorkout() {
   const ss = S.session, cur = ss.ex[ss.idx], ex = EX[cur.id], prev = lastSetsFor(cur.id);
   const last = ss.idx === ss.ex.length - 1;
   return `<div class="wk-top">
-      <button class="close" data-act="quit" aria-label="Keluar dari latihan">${I.close}</button>
-      <span class="count">Gerakan ${ss.idx + 1} dari ${ss.ex.length}</span>
-      <button class="finish" data-act="finish">Selesai</button>
+      <button class="close" data-act="quit" aria-label="${t('leaveWorkout')}">${I.close}</button>
+      <span class="count">${t('exOf', { n: ss.idx + 1, total: ss.ex.length })}</span>
+      <button class="finish" data-act="finish">${t('finish')}</button>
     </div>
     <div class="progress" style="--plate:${plate(cur.id)}">${ss.ex.map((e, i) =>
       `<i class="${i === ss.idx ? 'now' : e.sets.every(s => s.done) ? 'done' : ''}"></i>`).join('')}</div>
     <div class="wk-stage">
       <div class="stage" data-pict="${cur.id}"></div>
-      <button class="info" data-act="ex" data-id="${cur.id}">${I.info}Cara melakukan</button>
+      <button class="info" data-act="ex" data-id="${cur.id}">${I.info}${t('howTo')}</button>
     </div>
     <h1 class="wk-name">${esc(ex.name)}</h1>
-    <div class="wk-target">${esc(cur.target)}</div>
-    ${prev ? `<div class="prev">Terakhir: ${setsText(cur.id, prev)}</div>` : ''}
+    <div class="wk-target">${esc(cur.item ? fmtTarget(cur.item) : cur.target)}</div>
+    ${prev ? `<div class="prev">${t('last', { sets: setsText(cur.id, prev) })}</div>` : ''}
     <div class="sets">
-      <div class="set-head"><span>Set</span><span>${ex.bw ? '+ Beban (kg)' : 'Beban (kg)'}</span><span>${ex.timed ? 'Detik' : 'Rep'}</span><span></span></div>
+      <div class="set-head"><span>${t('setCol')}</span><span>${t(ex.bw ? 'plusWeightCol' : 'weightCol')}</span><span>${t(ex.timed ? 'secCol' : 'repCol')}</span><span></span></div>
       ${cur.sets.map((s, i) => {
         const ph = prev && (prev[i] || prev[prev.length - 1]);
         return `<div class="set-row ${s.done ? 'is-done' : ''}" data-i="${i}">
           <span class="set-no">${i + 1}</span>
-          <input inputmode="decimal" enterkeyhint="next" aria-label="Beban set ${i + 1}" data-f="kg" value="${esc(s.kg)}" placeholder="${ph && num(ph.kg) ? esc(ph.kg) : ex.bw ? '0' : '–'}">
-          <input inputmode="numeric" enterkeyhint="done" aria-label="${ex.timed ? 'Detik' : 'Repetisi'} set ${i + 1}" data-f="reps" value="${esc(s.reps)}" placeholder="${esc(ph ? ph.reps : cur.low)}">
-          <button class="tick" data-act="tick" data-i="${i}" aria-label="Tandai set ${i + 1} selesai" aria-pressed="${s.done}">${I.check}</button>
+          <input inputmode="decimal" enterkeyhint="next" aria-label="${t('weightAria', { n: i + 1 })}" data-f="kg" value="${esc(s.kg)}" placeholder="${ph && num(ph.kg) ? esc(ph.kg) : ex.bw ? '0' : '–'}">
+          <input inputmode="numeric" enterkeyhint="done" aria-label="${t(ex.timed ? 'secAria' : 'repAria', { n: i + 1 })}" data-f="reps" value="${esc(s.reps)}" placeholder="${esc(ph ? ph.reps : cur.low)}">
+          <button class="tick" data-act="tick" data-i="${i}" aria-label="${t('tickAria', { n: i + 1 })}" aria-pressed="${s.done}">${I.check}</button>
         </div>`;
       }).join('')}
-      <button class="add-set" data-act="add-set">Tambah set</button>
+      <button class="add-set" data-act="add-set">${t('addSet')}</button>
     </div>
     <div class="wk-nav"><div class="row">
-      <button class="btn ghost small" data-act="prev-ex" ${ss.idx === 0 ? 'disabled style="opacity:.4"' : ''}>Sebelumnya</button>
-      <button class="btn small" data-act="${last ? 'finish' : 'next-ex'}">${last ? 'Selesai latihan' : 'Gerakan berikutnya'}</button>
+      <button class="btn ghost small" data-act="prev-ex" ${ss.idx === 0 ? 'disabled style="opacity:.4"' : ''}>${t('prev')}</button>
+      <button class="btn small" data-act="${last ? 'finish' : 'next-ex'}">${t(last ? 'finishWorkout' : 'nextEx')}</button>
     </div></div>`;
 }
 function tick(i) {
@@ -1129,27 +1142,27 @@ function tick(i) {
   const kgIn = row.querySelector('[data-f="kg"]'), rIn = row.querySelector('[data-f="reps"]');
   if (!s.kg && num(kgIn.placeholder)) s.kg = kgIn.placeholder;
   if (!s.reps && num(rIn.placeholder)) s.reps = rIn.placeholder;
-  if (!num(s.reps)) { rIn.focus(); toast(EX[cur.id].timed ? 'Isi berapa detik dulu.' : 'Isi jumlah repetisi dulu.'); return; }
+  if (!num(s.reps)) { rIn.focus(); toast(t(EX[cur.id].timed ? 'needSec' : 'needReps')); return; }
   s.done = true;
   const allDone = ss.ex.every(e => e.sets.every(x => x.done));
   if (!allDone) startRest();
   save(); render();
-  if (cur.sets.every(x => x.done) && ss.idx < ss.ex.length - 1) toast('Gerakan ini selesai. Lanjut ke gerakan berikutnya.');
-  if (allDone) toast('Semua set selesai. Tekan "Selesai latihan" untuk menyimpan.');
+  if (cur.sets.every(x => x.done) && ss.idx < ss.ex.length - 1) toast(t('exDone'));
+  if (allDone) toast(t('allDone'));
 }
 function finishWorkout() {
   const ss = S.session;
   const ex = ss.ex.map(e => ({ id: e.id, sets: e.sets.filter(s => s.done).map(s => ({ kg: s.kg, reps: s.reps })) })).filter(e => e.sets.length);
   if (!ex.length) {
-    if (!confirm('Belum ada set yang dicentang. Keluar tanpa menyimpan?')) return;
+    if (!confirm(t('cNoSets'))) return;
     S.session = null; save(); go({ view: 'home', tab: 'home' }); return;
   }
   const todo = ss.ex.reduce((a, e) => a + e.sets.filter(s => !s.done).length, 0);
-  if (todo && !confirm(`Masih ada ${todo} set yang belum dicentang. Simpan latihan sekarang?`)) return;
+  if (todo && !confirm(t('cUnticked', { n: todo }))) return;
   S.history.unshift({ id: 'h' + Date.now(), pid: ss.pid, day: ss.day, start: ss.start, end: Date.now(), ex });
   S.session = null; save();
   go({ view: 'history', tab: 'history', open: S.history[0].id });
-  toast('Latihan tersimpan.');
+  toast(t('saved'));
 }
 
 /* ---------- Timer istirahat (berbasis jam, aman saat layar terkunci) ---------- */
@@ -1162,10 +1175,10 @@ function renderRest() {
   if (!on) { box.hidden = true; clearInterval(restTimer); restTimer = 0; return; }
   box.hidden = false;
   if (!box.firstChild) box.innerHTML = `<div class="in">
-    <div class="top"><span class="label">Istirahat</span><span class="label" id="rest-next"></span></div>
+    <div class="top"><span class="label">${t('rest')}</span><span class="label" id="rest-next"></span></div>
     <div class="clock" id="rest-clock">0:00</div>
     <div class="bar"><i id="rest-bar"></i></div>
-    <div class="ctrl"><button data-act="rest-minus">−15 dtk</button><button data-act="rest-plus">+15 dtk</button><button class="skip" data-act="rest-skip">Lewati</button></div>
+    <div class="ctrl"><button data-act="rest-minus">${t('minus15')}</button><button data-act="rest-plus">${t('plus15')}</button><button class="skip" data-act="rest-skip">${t('skip')}</button></div>
   </div>`;
   updateRest();
   if (!restTimer) restTimer = setInterval(updateRest, 250);
@@ -1178,7 +1191,7 @@ function updateRest() {
   const a = Math.abs(left);
   $('#rest-clock').textContent = (left < 0 ? '+' : '') + Math.floor(a / 60) + ':' + String(a % 60).padStart(2, '0');
   $('#rest-bar').style.width = Math.max(0, Math.min(100, left / ss.restLen * 100)) + '%';
-  $('#rest-next').textContent = left <= 0 ? 'Waktunya set berikutnya' : 'Default ' + S.rest + ' dtk';
+  $('#rest-next').textContent = left <= 0 ? t('restNow') : t('restDefault', { n: S.rest });
   if (left <= 0 && !beeped) { beeped = true; beep(); }
   if (left < -60) { ss.restEnd = null; save(); renderRest(); }
 }
@@ -1204,24 +1217,24 @@ function beep() {
 
 /* ---------- Lembar detail gerakan ---------- */
 function openSheet(id) {
-  const ex = EX[id], best = bestFor(id), prev = lastSetsFor(id);
+  const ex = exInfo(id), best = bestFor(id), prev = lastSetsFor(id);
   const sh = $('#sheet');
   sh.innerHTML = `<div class="sheet-inner">
-    <div class="topbar"><span></span><button class="close" data-act="close-sheet" aria-label="Tutup">${I.close}</button></div>
+    <div class="topbar"><span></span><button class="close" data-act="close-sheet" aria-label="${t('close')}">${I.close}</button></div>
     <div class="stage" data-pict="${id}"></div>
     <h1>${esc(ex.name)}</h1>
     <div class="facts">
-      <span style="--plate:${plate(id)}"><i class="dot"></i>${CATS[ex.cat].name}</span>
+      <span style="--plate:${plate(id)}"><i class="dot"></i>${catName(ex.cat)}</span>
       <span>${esc(ex.equip)}</span>
     </div>
-    <p class="sub" style="margin:0">Otot: ${esc(ex.muscles.join(', '))}</p>
+    <p class="sub" style="margin:0">${esc(t('muscles', { list: ex.muscles.join(', ') }))}</p>
     ${best ? `<div class="stats">
-      <div class="stat"><small>Terbaik</small><strong>${num(best.kg) ? fmtKg(num(best.kg)) + ' kg × ' + esc(best.reps) : esc(best.reps) + (ex.timed ? ' dtk' : ' rep')}</strong></div>
-      <div class="stat"><small>Terakhir</small><strong>${prev.length} set</strong></div>
+      <div class="stat"><small>${t('best')}</small><strong>${num(best.kg) ? fmtKg(num(best.kg)) + ' kg × ' + esc(best.reps) : esc(best.reps) + ' ' + t(ex.timed ? 'secShort' : 'repShort')}</strong></div>
+      <div class="stat"><small>${t('lastStat')}</small><strong>${t('nSets', { n: prev.length })}</strong></div>
     </div>` : ''}
-    <h2 class="section-title">Cara melakukan</h2>
+    <h2 class="section-title">${t('howTo')}</h2>
     <ol class="steps">${ex.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>
-    <h2 class="section-title">Hindari</h2>
+    <h2 class="section-title">${t('avoid')}</h2>
     <ul class="avoid">${ex.avoid.map(s => `<li>${esc(s)}</li>`).join('')}</ul>
     ${ex.note ? `<div class="note">${esc(ex.note)}</div>` : ''}
   </div>`;
@@ -1251,11 +1264,11 @@ document.addEventListener('click', e => {
     case 'ex': openSheet(b.dataset.id); break;
     case 'close-sheet': closeSheet(); break;
     case 'start':
-      if (ss && !confirm('Ada latihan yang belum selesai. Mulai baru dan buang yang lama?')) return;
+      if (ss && !confirm(t('cReplace'))) return;
       startWorkout(b.dataset.pid, +b.dataset.day); break;
     case 'resume': go({ view: 'workout', tab: 'home' }); break;
     case 'quit':
-      if (ss.ex.some(x => x.sets.some(s => s.done)) && !confirm('Keluar dan buang latihan ini? Untuk menyimpan, tekan Selesai.')) return;
+      if (ss.ex.some(x => x.sets.some(s => s.done)) && !confirm(t('cQuit'))) return;
       S.session = null; save(); go({ view: 'home', tab: 'home' }); break;
     case 'tick': tick(+b.dataset.i); break;
     case 'add-set': ss.ex[ss.idx].sets.push({ kg: '', reps: '', done: false }); save(); render(); break;
@@ -1267,11 +1280,14 @@ document.addEventListener('click', e => {
     case 'rest-skip': ss.restEnd = null; save(); renderRest(); break;
     case 'toggle-log': nav.open = nav.open === b.dataset.id ? null : b.dataset.id; render(); break;
     case 'del-log':
-      if (!confirm('Hapus catatan latihan ini?')) return;
+      if (!confirm(t('cDelete'))) return;
       S.history = S.history.filter(h => h.id !== b.dataset.id); save(); render(); break;
+    case 'lang': setLang(b.dataset.l); S.lang = currentLang; save(); render(); break;
+    default: mealsAction(a, b);
   }
 });
 document.addEventListener('input', e => {
+  if (e.target.dataset && e.target.dataset.mf) { mealsInput(e.target); return; }
   const inp = e.target.closest('.set-row input'); if (!inp || !S.session) return;
   const i = +inp.closest('.set-row').dataset.i;
   S.session.ex[S.session.idx].sets[i][inp.dataset.f] = inp.value.trim();
@@ -1287,9 +1303,13 @@ if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
-document.getElementById('t-home').innerHTML = I.prog + 'Program';
-document.getElementById('t-lib').innerHTML = I.lib + 'Gerakan';
-document.getElementById('t-hist').innerHTML = I.hist + 'Riwayat';
+function renderTabs() {
+  $('.tabs').setAttribute('aria-label', t('navMain'));
+  $('#t-home').innerHTML = I.prog + t('tabProgram');
+  $('#t-lib').innerHTML = I.lib + t('tabMoves');
+  $('#t-meals').innerHTML = I.meal + t('tabMeals');
+  $('#t-hist').innerHTML = I.hist + t('tabHistory');
+}
 </script>
 </body>
 </html>
