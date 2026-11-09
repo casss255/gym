@@ -55,7 +55,9 @@ function summarize(entries, key) {
 }
 
 /* Everything needed to draw one line chart from the first check-in to the newest.
-   x follows real time; y is scaled to the data with a little headroom. box is { w, h, left, right, top, bottom }. */
+   x follows real time; y is scaled to the data with a little headroom. box is { w, h, left, right, top, bottom }.
+   The first check-in sits at the left edge. With only one, the line runs flat across the chart, and each new
+   check-in then carries the same line on to the right edge. */
 function chartModel(entries, key, box) {
   const values = entries.map(e => e[key]);
   const lo = Math.min(...values), hi = Math.max(...values);
@@ -63,10 +65,12 @@ function chartModel(entries, key, box) {
   const yMin = lo - headroom, yMax = hi + headroom;
   const plotW = box.w - box.left - box.right, plotH = box.h - box.top - box.bottom;
   const t0 = dateMs(entries[0].date), t1 = dateMs(entries[entries.length - 1].date);
-  const xAt = date => (t1 === t0 ? box.left + plotW / 2 : box.left + ((dateMs(date) - t0) / (t1 - t0)) * plotW);
+  const xAt = date => (t1 === t0 ? box.left : box.left + ((dateMs(date) - t0) / (t1 - t0)) * plotW);
   const yAt = v => box.top + (1 - (v - yMin) / (yMax - yMin)) * plotH;
+  const points = entries.map(e => ({ x: xAt(e.date), y: yAt(e[key]), value: e[key], date: e.date }));
   return {
-    points: entries.map(e => ({ x: xAt(e.date), y: yAt(e[key]), value: e[key], date: e.date })),
+    points,
+    line: points.length === 1 ? [points[0], { ...points[0], x: box.left + plotW }] : points,
     ticks: [yMax, (yMin + yMax) / 2, yMin].map(v => ({ value: v, y: yAt(v) })),
     baselineY: yAt(values[0]),
     yMin, yMax,

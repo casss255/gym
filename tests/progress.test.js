@@ -107,11 +107,28 @@ test('chartModel: lower values sit lower on the screen and everything stays insi
   assert.strictEqual(m.baselineY, m.points[0].y);
 });
 
-test('chartModel: a single check-in is centred, and identical values do not divide by zero', () => {
+test('chartModel: a single check-in starts at the left edge with a flat line across the chart', () => {
   const one = chartModel([entry('2026-11-09', 80, 90)], 'w', BOX);
   assert.strictEqual(one.points.length, 1);
   assert.ok(Number.isFinite(one.points[0].x) && Number.isFinite(one.points[0].y));
-  assert.strictEqual(one.points[0].x, BOX.left + (BOX.w - BOX.left - BOX.right) / 2);
+  assert.strictEqual(one.points[0].x, BOX.left);
+  assert.strictEqual(one.line.length, 2, 'one check-in still has a line to draw');
+  assert.strictEqual(one.line[0].x, BOX.left);
+  assert.strictEqual(one.line[1].x, BOX.w - BOX.right);
+  assert.strictEqual(one.line[0].y, one.line[1].y, 'the line is horizontal');
+});
+
+test('chartModel: the next check-in extends the same line from the first one', () => {
+  const first = entry('2026-11-02', 80, 90);
+  const before = chartModel([first], 'w', BOX);
+  const after = chartModel([first, entry('2026-11-09', 78, 88)], 'w', BOX);
+  assert.strictEqual(after.points[0].x, before.points[0].x, 'the first point stays at the left edge');
+  assert.strictEqual(after.points[1].x, BOX.w - BOX.right, 'the new point is at the right edge');
+  assert.ok(after.points[1].y > after.points[0].y, 'a lower weight is drawn lower');
+  assert.deepStrictEqual(after.line.map(p => [p.x, p.y]), after.points.map(p => [p.x, p.y]), 'with 2+ check-ins the line passes through every point');
+});
+
+test('chartModel: identical values do not divide by zero', () => {
   const flat = chartModel([entry('2026-11-02', 80, 90), entry('2026-11-09', 80, 90)], 'w', BOX);
   flat.points.forEach(p => assert.ok(Number.isFinite(p.y)));
   assert.ok(flat.yMax > flat.yMin);

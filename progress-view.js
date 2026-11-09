@@ -49,13 +49,13 @@ function chartSvg(model, m, entries, s) {
   const grid = model.ticks.map(k => `<line class="c-grid" x1="${plot.x0}" x2="${plot.x1}" y1="${k.y.toFixed(1)}" y2="${k.y.toFixed(1)}"/>`
     + `<text class="c-axis" x="${plot.x0 - 6}" y="${(k.y + 4).toFixed(1)}" text-anchor="end">${fmt1(k.value)}</text>`).join('');
   const base = many ? `<line class="c-base" x1="${plot.x0}" x2="${plot.x1}" y1="${model.baselineY.toFixed(1)}" y2="${model.baselineY.toFixed(1)}"/>` : '';
-  const line = many ? `<polyline class="c-line" points="${model.points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/>` : '';
+  const line = `<polyline class="c-line" points="${model.line.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/>`;
   const dots = model.points.map((p, i) => `<circle class="c-dot${i === 0 || i === last ? ' end' : ''}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="${i === 0 || i === last ? 5.5 : 4}"/>`).join('');
   const valueLabel = (p, anchor) => `<text class="c-val" x="${p.x.toFixed(1)}" y="${(p.y - 11).toFixed(1)}" text-anchor="${anchor}">${fmt1(p.value)}</text>`;
-  const values = many ? valueLabel(model.points[0], 'start') + valueLabel(model.points[last], 'end') : valueLabel(model.points[0], 'middle');
+  const values = valueLabel(model.points[0], 'start') + (many ? valueLabel(model.points[last], 'end') : '');
   const dates = many
     ? `<text class="c-axis" x="${plot.x0}" y="${plot.y1 + 20}" text-anchor="start">${fmtDate(entries[0].date, true)}</text><text class="c-axis" x="${plot.x1}" y="${plot.y1 + 20}" text-anchor="end">${fmtDate(entries[last].date, true)}</text>`
-    : `<text class="c-axis" x="${model.points[0].x.toFixed(1)}" y="${plot.y1 + 20}" text-anchor="middle">${fmtDate(entries[0].date, true)}</text>`;
+    : `<text class="c-axis" x="${plot.x0}" y="${plot.y1 + 20}" text-anchor="start">${fmtDate(entries[0].date, true)}</text>`;
   const name = t(m.title);
   const label = many
     ? t('p_chart_aria', { name, a: fmt1(s.first), b: fmt1(s.last), unit: m.unit, d1: fmtDate(entries[0].date, true), d2: fmtDate(entries[last].date, true) })
