@@ -10,8 +10,12 @@ const PROG_EN = {
   ppl: { name: 'Push Pull Legs', level: 'Intermediate', desc: 'Push, pull, legs. Run it 3 days a week, or 6 days once you are used to it.' },
   homeworkout: { name: 'No Equipment', level: 'All levels', desc: 'For home or travel. No equipment needed.' },
   fatloss: {
-    name: 'Fat Loss Circuit', level: 'All levels',
-    desc: 'Three days a week: a full-body circuit, a cardio and core day, then a legs circuit. Keep rests short (30–45 seconds) to keep your heart rate up. Pair it with the Meals tab and daily walks.',
+    name: 'Fat Loss: No Equipment', level: 'All levels',
+    desc: 'No equipment at all, so you can do it at home. Three days a week: a full-body circuit, a cardio and core day, then a legs circuit. Keep rests short (30–45 seconds) to keep your heart rate up. Pair it with the Meals tab and daily walks.',
+  },
+  fatlossgym: {
+    name: 'Fat Loss: Gym', level: 'All levels',
+    desc: 'Three days a week in the gym: lower body, upper body, then a full-body circuit. Use moderate weights (10–15 reps, leave 2 reps in the tank), keep rests short (45–60 seconds), and finish with cardio. Add a 20–30 minute walk on your other days.',
   },
 };
 
@@ -255,6 +259,60 @@ const EX_EN = {
     ],
     avoid: ['Lower back arching off the floor.', 'Dropping your legs too fast.'],
     note: 'Too hard? Bend your knees slightly.',
+  },
+  burpee: {
+    equip: 'No equipment', muscles: ['Full body', 'Chest', 'Quads', 'Core'],
+    steps: [
+      'Stand tall with your feet shoulder-width apart.',
+      'Drop into a squat and place both hands on the floor in front of your feet.',
+      'Jump or step both feet back into a high plank.',
+      'Bring your feet back toward your hands, then stand up. Add a small jump at the top to make it harder.',
+    ],
+    avoid: ['Hips sagging in the plank.', 'Rounding your back as you stand.'],
+    note: 'Not strong enough yet? Step your feet back one at a time and skip the jump.',
+  },
+  thruster: {
+    equip: 'Dumbbells', muscles: ['Quads', 'Glutes', 'Shoulders', 'Core'],
+    steps: [
+      'Hold a dumbbell in each hand at shoulder height. Feet shoulder-width apart.',
+      'Lower into a squat with your chest up, until your thighs are parallel to the floor.',
+      'Drive through the floor and, as you stand, press both dumbbells straight overhead in one motion.',
+      'Lower the dumbbells to your shoulders and go straight into the next squat.',
+    ],
+    avoid: ['Standing up first and pressing afterwards. It should be one flowing movement.', 'Arching your lower back as you press.'],
+    note: 'Use light weights until the movement feels smooth.',
+  },
+  dbswing: {
+    equip: 'Dumbbell or kettlebell', muscles: ['Glutes', 'Hamstrings', 'Lower back', 'Shoulders'],
+    steps: [
+      'Stand shoulder-width apart, holding one dumbbell with both hands in front of your thighs.',
+      'Hinge at the hips, push your hips back and swing the dumbbell between your legs.',
+      'Snap your hips forward hard until you stand tall. The dumbbell swings up to chest height from the hip drive, not from your arms.',
+      'Let it fall back and repeat with a steady rhythm.',
+    ],
+    avoid: ['Lifting the dumbbell with your arms.', 'Rounding your back as you hinge.', 'Bending your knees into a squat.'],
+  },
+  ballslam: {
+    equip: 'Medicine ball (slam ball)', muscles: ['Core', 'Shoulders', 'Upper back', 'Quads'],
+    steps: [
+      'Hold a slam ball at chest height, feet shoulder-width apart.',
+      'Raise the ball high overhead, rising onto your toes and stretching tall.',
+      'Slam the ball into the floor in front of your feet as hard as you can, lowering your body and hinging at the hips.',
+      'Pick the ball back up with a straight back and repeat.',
+    ],
+    avoid: ['Throwing with only your arms and not using your body.', 'Rounding your back as you pick the ball up.'],
+    note: 'Use a dead-weight slam ball (it does not bounce) and keep clear of other people.',
+  },
+  treadmill: {
+    equip: 'Treadmill', muscles: ['Quads', 'Calves', 'Heart and lungs'],
+    steps: [
+      'Warm up for 3–5 minutes with a brisk walk on the treadmill.',
+      'Raise the speed to a fast run for the interval time (for example 30 seconds), hard but still controlled.',
+      'Drop back to a walk until your breathing recovers, then repeat.',
+      'Run tall with light steps and relaxed, swinging arms.',
+    ],
+    avoid: ['Holding on to the handrails while running.', 'Jumping on or off while the belt is moving fast.'],
+    note: 'Not used to running? Swap it for a fast walk on a 6–10% incline.',
   },
 };
 

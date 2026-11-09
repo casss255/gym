@@ -4,7 +4,7 @@ A gym app for iPhone: animated exercise demos, weight and rep logging, rest time
 
 ## Features
 
-- **Programs and exercises**: five programs and 24 animated exercises with step-by-step instructions, including a **Fat Loss Circuit** (three days a week: a full-body circuit, a cardio and core day, and a legs circuit) built from cardio moves like jumping jacks, high knees, mountain climbers and step-ups.
+- **Programs and exercises**: six programs and 29 animated exercises with step-by-step instructions. For fat loss there are two three-day programs: **Fat Loss: Gym** (lower body, upper body, and a full-body circuit with barbell, dumbbell, bench, pull-up bar, ball slams and treadmill intervals) and **Fat Loss: No Equipment** (home circuits built from jumping jacks, burpees, mountain climbers, squat jumps and more, with nothing but your bodyweight).
 - **Workout logger**: weight and reps per set, rest timer, personal bests, history.
 - **Progress tab**: a weekly check-in for your weight and waist circumference. Two charts run from your very first check-in to your newest, with your starting value as a dashed line and the change since the start. Even a single check-in shows a flat line, and each new check-in carries the line on from there. A red dot on the tab shows when a check-in is due (7 days since the last one). The form shows your previous check-in and the change from it as you type. A check-in can also update your Meals plan to your new weight.
 - **Languages**: switch between English (EN) and Bahasa Indonesia (ID) with the toggle at the top of the main screens. The app picks your phone's language the first time.
@@ -50,7 +50,7 @@ node --test tests/*.test.js
 
 - Workout data and your menu are stored on each iPhone. Removing the icon from the Home Screen also deletes the data.
 - The timer sound is not audible when the iPhone is in silent mode.
-- Programs and exercises can be edited in the `EX` and `PROGRAMS` sections inside `index.html`. The cardio exercises and the Fat Loss Circuit are in `cardio.js`. English text for all of them lives in `i18n-ex.js`.
-- An exercise is two or more keyframe poses (joint angles) that the stick figure moves between. `y` lifts the whole body for jumps.
+- Programs and exercises can be edited in the `EX` and `PROGRAMS` sections inside `index.html`. The cardio and conditioning exercises and the two Fat Loss programs are in `cardio.js`. English text for all of them lives in `i18n-ex.js`.
+- An exercise is two or more keyframe poses (joint angles) that the stick figure moves between. `y` lifts the whole body for jumps and `x` shifts it sideways (a burpee's feet jumping back).
 - Recipes and ingredients (with calories and protein per 100 g) are in `meals-data.js`.
 - Check-ins are stored on the phone only. The chart maths is in `progress.js` and the screens are in `progress-view.js`.

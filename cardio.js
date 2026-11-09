@@ -147,16 +147,130 @@ function cardioExercises(GROUND, A) {
         ],
       },
     },
+    burpee: {
+      name: 'Burpee', cat: 'kardio', equip: 'Tanpa alat', bw: true,
+      muscles: ['Seluruh tubuh', 'Dada', 'Paha depan', 'Core'],
+      steps: [
+        'Berdiri tegak dengan kaki selebar bahu.',
+        'Turun ke posisi jongkok dan letakkan kedua tangan di lantai di depan kaki.',
+        'Lompatkan atau langkahkan kedua kaki ke belakang sampai posisi plank tinggi.',
+        'Kembalikan kaki ke arah tangan, lalu berdiri. Tambahkan lompatan kecil di atas kalau mau lebih berat.',
+      ],
+      avoid: ['Pinggul turun saat di posisi plank.', 'Punggung membulat saat berdiri.'],
+      note: 'Belum kuat? Langkahkan kaki satu per satu dan tanpa lompat.',
+      anim: {
+        dur: 3200,
+        anchor: { joint: 'ankle', x: 70, y: A },
+        poses: [
+          { t: 180, ua: 5, fa: 5, th: 0, sh: 0, ft: 90 }, // standing
+          { t: 130, ua: 15, fa: 15, th: 95, sh: -50, ft: 90 }, // squat, hands on the floor
+          { t: 111, ua: 0, fa: 0, th: -69, sh: -69, ft: 15, x: -77.6, y: -9.6 }, // feet back, high plank (hands stay where they were)
+        ],
+      },
+    },
+    thruster: {
+      name: 'Dumbbell Thruster', cat: 'kardio', equip: 'Dumbbell', bw: false,
+      muscles: ['Paha depan', 'Bokong', 'Bahu', 'Core'],
+      steps: [
+        'Pegang satu dumbbell di tiap tangan setinggi bahu. Kaki selebar bahu.',
+        'Turun ke posisi squat dengan dada tegak sampai paha sejajar lantai.',
+        'Dorong lantai dengan kuat dan, sambil berdiri, dorong kedua dumbbell lurus ke atas kepala dalam satu gerakan.',
+        'Turunkan dumbbell ke bahu sambil langsung turun ke squat berikutnya.',
+      ],
+      avoid: ['Berdiri dulu baru menekan. Gerakannya harus satu aliran.', 'Punggung melengkung ke belakang saat menekan.'],
+      note: 'Pakai beban ringan sampai gerakannya lancar.',
+      anim: {
+        dur: 2400, still: 0,
+        anchor: { joint: 'ankle', x: 108, y: A },
+        poses: [
+          { t: 140, ua: 25, fa: 150, th: 84, sh: -28 },
+          { t: 180, ua: 178, fa: 180, th: 0, sh: 0 },
+        ],
+        props: [{ type: 'db', at: 'hand' }],
+      },
+    },
+    dbswing: {
+      name: 'Dumbbell Swing', cat: 'kardio', equip: 'Dumbbell atau kettlebell', bw: false,
+      muscles: ['Bokong', 'Paha belakang', 'Punggung bawah', 'Bahu'],
+      steps: [
+        'Berdiri selebar bahu, pegang satu dumbbell dengan dua tangan di depan paha.',
+        'Bungkuk dari pinggul, dorong pinggul ke belakang, dan ayunkan dumbbell ke antara kaki.',
+        'Dorong pinggul ke depan dengan kuat sampai berdiri tegak. Dumbbell terayun ke depan setinggi dada oleh dorongan pinggul, bukan diangkat lengan.',
+        'Biarkan dumbbell jatuh kembali dan ulangi dengan ritme tetap.',
+      ],
+      avoid: ['Mengangkat dumbbell dengan lengan.', 'Punggung membulat saat membungkuk.', 'Menekuk lutut sampai seperti squat.'],
+      anim: {
+        dur: 1900,
+        anchor: { joint: 'ankle', x: 112, y: A },
+        poses: [
+          { t: 125, ua: -20, fa: -35, th: 40, sh: -12 },
+          { t: 178, ua: 88, fa: 88, th: 4, sh: 0 },
+        ],
+        props: [{ type: 'db', at: 'hand' }],
+      },
+    },
+    ballslam: {
+      name: 'Ball Slam', cat: 'kardio', equip: 'Medicine ball (slam ball)', bw: false,
+      muscles: ['Core', 'Bahu', 'Punggung atas', 'Paha depan'],
+      steps: [
+        'Pegang slam ball setinggi dada, kaki selebar bahu.',
+        'Angkat bola tinggi ke atas kepala sambil berjinjit dan regangkan badan.',
+        'Banting bola ke lantai sekuat tenaga di depan kaki sambil menurunkan badan dan menekuk pinggul.',
+        'Ambil bola kembali dengan punggung lurus dan ulangi.',
+      ],
+      avoid: ['Hanya melempar dengan lengan tanpa memakai badan.', 'Punggung membulat saat mengambil bola.'],
+      note: 'Pakai slam ball (tidak memantul) dan beri jarak dari orang lain.',
+      anim: {
+        dur: 1800, still: 0,
+        anchor: { joint: 'ankle', x: 108, y: A },
+        poses: [
+          { t: 180, ua: 175, fa: 178, th: 0, sh: 0, ft: 75 },
+          { t: 130, ua: 30, fa: 30, th: 95, sh: -50 },
+        ],
+        props: [{ type: 'db', at: 'hand', r: 9 }],
+      },
+    },
+    treadmill: {
+      name: 'Treadmill Intervals', cat: 'kardio', equip: 'Treadmill', bw: true, timed: true,
+      muscles: ['Paha depan', 'Betis', 'Paru-paru dan jantung'],
+      steps: [
+        'Pemanasan 3–5 menit dengan berjalan cepat di treadmill.',
+        'Naikkan kecepatan sampai berlari cepat selama waktu interval (misalnya 30 detik), yang terasa berat tapi masih terkendali.',
+        'Turunkan ke kecepatan jalan sampai napas pulih, lalu ulangi.',
+        'Berlarilah tegak dengan langkah ringan dan tangan mengayun santai.',
+      ],
+      avoid: ['Berpegangan pada pegangan treadmill saat berlari.', 'Melompat naik atau turun saat sabuk masih berjalan cepat.'],
+      note: 'Belum biasa berlari? Ganti dengan jalan cepat di tanjakan (incline) 6–10%.',
+      anim: {
+        dur: 1100,
+        anchor: { joint: 'hip', x: 112, y: 95 },
+        statics: [{ type: 'treadmill', x1: 40, x2: 190, y: GROUND - 14 }],
+        poses: [
+          { t: 172, ...RUN_ARM_BACK, ua2: RUN_ARM_FWD.ua, fa2: RUN_ARM_FWD.fa, th: 60, sh: 10, ft: 60, th2: -30, sh2: -35, ft2: 40 },
+          { t: 172, ua: RUN_ARM_FWD.ua, fa: RUN_ARM_FWD.fa, ua2: RUN_ARM_BACK.ua, fa2: RUN_ARM_BACK.fa, th: -30, sh: -35, ft: 40, th2: 60, sh2: 10, ft2: 60 },
+        ],
+      },
+    },
   };
 }
 
-/* Three days a week: full-body circuit, cardio and core, legs circuit. */
+/* Two fat-loss programs, three days a week each: one with no equipment at all, one for the gym. */
 const FATLOSS_PROGRAM = {
-  id: 'fatloss', name: 'Bakar Lemak', freq: 3, level: 'Semua level',
-  desc: 'Tiga hari seminggu: sirkuit seluruh tubuh, kardio dan perut, lalu sirkuit kaki. Istirahat singkat (30–45 detik) supaya detak jantung tetap tinggi. Padukan dengan menu di tab Makan dan jalan kaki setiap hari.',
+  id: 'fatloss', name: 'Bakar Lemak: Tanpa Alat', freq: 3, level: 'Semua level',
+  desc: 'Tanpa alat sama sekali, bisa di rumah. Tiga hari seminggu: sirkuit seluruh tubuh, kardio dan perut, lalu sirkuit kaki. Istirahat singkat (30–45 detik) supaya detak jantung tetap tinggi. Padukan dengan menu di tab Makan dan jalan kaki setiap hari.',
   days: [
-    { name: 'Burn A', items: [['airsquat', 3, '15'], ['pushup', 3, 'max'], ['stepup', 3, '10', 'repLeg'], ['jumpingjack', 3, '40', 'sec'], ['plank', 3, '30', 'sec']] },
+    { name: 'Burn A', items: [['airsquat', 3, '15'], ['pushup', 3, 'max'], ['burpee', 3, '8'], ['jumpingjack', 3, '40', 'sec'], ['plank', 3, '30', 'sec']] },
     { name: 'Burn B', items: [['squatjump', 3, '12'], ['mountainclimber', 3, '30', 'sec'], ['highknees', 3, '30', 'sec'], ['legraise', 3, '12'], ['crunch', 3, '15']] },
     { name: 'Burn C', items: [['lunge', 3, '10', 'repLeg'], ['bridge', 3, '15'], ['calf', 3, '20'], ['buttkick', 3, '30', 'sec'], ['plank', 3, '30', 'sec']] },
+  ],
+};
+
+const FATLOSS_GYM_PROGRAM = {
+  id: 'fatlossgym', name: 'Bakar Lemak: Gym', freq: 3, level: 'Semua level',
+  desc: 'Tiga hari seminggu di gym: badan bawah, badan atas, lalu sirkuit seluruh tubuh. Pakai beban sedang (10–15 repetisi, sisakan 2 repetisi sebelum gagal), istirahat singkat (45–60 detik), dan tutup dengan latihan kardio. Tambahkan jalan kaki 20–30 menit di hari lain.',
+  days: [
+    { name: 'Gym A', items: [['squat', 3, '10'], ['rdl', 3, '12'], ['stepup', 3, '10', 'repLeg'], ['calf', 3, '15'], ['treadmill', 5, '30', 'sec']] },
+    { name: 'Gym B', items: [['bench', 3, '10'], ['row', 3, '10'], ['ohp', 3, '10'], ['pullup', 3, 'max'], ['ballslam', 3, '12']] },
+    { name: 'Gym C', items: [['deadlift', 3, '8'], ['thruster', 3, '12'], ['dbswing', 3, '15'], ['plank', 3, '40', 'sec'], ['treadmill', 6, '30', 'sec']] },
   ],
 };

@@ -353,6 +353,7 @@ function resolvePose(p) {
   if (r.h === undefined) r.h = r.t;
   if (r.ft === undefined) r.ft = 90;
   if (r.y === undefined) r.y = 0; // optional vertical offset of the whole body (jumps, hops)
+  if (r.x === undefined) r.x = 0; // optional sideways offset (a burpee's feet jumping back)
   ['ua', 'fa', 'th', 'sh', 'ft'].forEach(k => { if (r[k + '2'] === undefined) r[k + '2'] = r[k]; });
   return r;
 }
@@ -402,7 +403,7 @@ function solveAt(anim, u) {
   const M = mixPose(R[i], R[i + 1], s - i);
   const J = forward(M, anim.view === 'front');
   const a = anim.anchor;
-  const off = [a.x - J[a.joint][0], a.y + M.y - J[a.joint][1]];
+  const off = [a.x + M.x - J[a.joint][0], a.y + M.y - J[a.joint][1]];
   for (const k in J) J[k] = add(J[k], off);
   return J;
 }
@@ -419,6 +420,7 @@ function fitBox(anim) {
   (anim.statics || []).forEach(s => {
     if (s.type === 'bench') { inc(s.x1, s.y - 2); inc(s.x2, GROUND); }
     if (s.type === 'bar') { inc(s.x - 8, s.y - 10); inc(s.x + 8, s.y + 6); }
+    if (s.type === 'treadmill') { inc(s.x1, s.y); inc(s.x2, GROUND); inc(s.x2, s.y - 92); }
   });
   if (!anim.noFloor) inc(x0, GROUND + 4);
   const pad = 8;
@@ -449,6 +451,13 @@ function buildPict(anim, label) {
       el('line', { x1: s.x1 + 10, y1: s.y + 9, x2: s.x1 + 10, y2: GROUND, class: 'p-leg' }, svg);
       el('line', { x1: s.x2 - 10, y1: s.y + 9, x2: s.x2 - 10, y2: GROUND, class: 'p-leg' }, svg);
     }
+    if (s.type === 'treadmill') {
+      el('rect', { x: s.x1, y: s.y, width: s.x2 - s.x1, height: 8, rx: 4, class: 'p-equip' }, svg);
+      el('line', { x1: s.x1 + 14, y1: s.y + 8, x2: s.x1 + 14, y2: GROUND, class: 'p-leg' }, svg);
+      el('line', { x1: s.x2 - 14, y1: s.y + 8, x2: s.x2 - 14, y2: GROUND, class: 'p-leg' }, svg);
+      el('line', { x1: s.x2 - 6, y1: s.y, x2: s.x2 - 6, y2: s.y - 78, class: 'p-leg' }, svg);
+      el('rect', { x: s.x2 - 22, y: s.y - 92, width: 24, height: 14, rx: 3, class: 'p-equip' }, svg);
+    }
     if (s.type === 'bar') {
       el('line', { x1: s.x - 40, y1: box.y - 2, x2: s.x - 40, y2: s.y, class: 'p-leg' }, svg);
       el('line', { x1: s.x - 40, y1: s.y, x2: s.x, y2: s.y, class: 'p-leg' }, svg);
@@ -468,7 +477,7 @@ function buildPict(anim, label) {
         el('circle', { r: 4, class: 'p-hub' }, grp);
         return grp;
       }
-      return el('circle', { r: 6.5, class: 'p-db' }, svg);
+      return el('circle', { r: pr.r || 6.5, class: 'p-db' }, svg);
     }),
     nearLeg: el('polyline', { class: 'p-limb' }, svg),
     nearArm: el('polyline', { class: 'p-limb' }, svg),
@@ -908,7 +917,7 @@ const PROGRAMS = [
   },
 ];
 
-PROGRAMS.splice(1, 0, FATLOSS_PROGRAM); // right after the beginner program
+PROGRAMS.splice(1, 0, FATLOSS_GYM_PROGRAM, FATLOSS_PROGRAM); // right after the beginner program
 
 /* ---------- Penyimpanan ---------- */
 const KEY = 'gymapp.v1';
